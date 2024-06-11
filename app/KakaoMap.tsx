@@ -1,7 +1,8 @@
 import Script from 'next/script';
 import { useEffect, useState } from 'react';
 import { Map, MapMarker } from 'react-kakao-maps-sdk';
-import { PlacesSearchResult, Status, Pagination } from 'react-kakao-maps-sdk/types/places';
+// TODO: Uncomment the following line to use the types
+// import { PlacesSearchResult, Status, Pagination } from 'react-kakao-maps-sdk/types/places';
 
 const KakaoMap: React.FC = () => {
   const [searchKeyword, setSearchKeyword] = useState('클라이밍');
@@ -22,9 +23,9 @@ const KakaoMap: React.FC = () => {
 
   // 장소검색이 완료됐을 때 호출되는 콜백함수 입니다
   function placesSearchCB(
-    result: PlacesSearchResult,
-    status: Status,
-    pagination: Pagination) {
+    result: any,
+    status: any,
+    pagination: any) {
     console.log(result, status, pagination);
     if (status === kakao.maps.services.Status.OK) {
       setSearchResults(result.map((place: { y: number; x: number; }) => ({
