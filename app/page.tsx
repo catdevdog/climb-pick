@@ -1,9 +1,16 @@
-import Image from "next/image";
+'use client';
+import React, { useEffect } from 'react';
+import KakaoMap from './KakaoMap';
 
 export default function Home() {
+  useEffect(() => {
+  }, []);
+
   return (
-    <div>
-      테스트
-    </div>
+    <>
+      <div className="w-full h-screen">
+        <KakaoMap></KakaoMap>
+      </div>
+    </>
   );
 }
