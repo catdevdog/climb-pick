@@ -20,5 +20,6 @@ jobs:
           projectId: climb-pick
       - name: create dotenv
         run: |
-         touch .env
-         echo "NEXT_PUBLIC_KAKAO_API_KEY=${{ secrets.NEXT_PUBLIC_KAKAO_API_KEY }}" >> .env
+          echo "NEXT_PUBLIC_KAKAO_API_KEY=$NEXT_PUBLIC_KAKAO_API_KEY" >> .env
+        env:
+          NEXT_PUBLIC_KAKAO_API_KEY: ${{secrets.NEXT_PUBLIC_KAKAO_API_KEY}}
