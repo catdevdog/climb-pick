@@ -8,8 +8,6 @@ declare global {
   }
 }
 
-const inter = Inter({ subsets: ["latin"] });
-
 export const metadata: Metadata = {
   title: "Climb Pick",
   description: "내 주변 클라이밍장 찾기",
@@ -22,7 +20,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={inter.className}>{children}</body>
+      <body className="text-black">{children}</body>
     </html>
   );
 }
