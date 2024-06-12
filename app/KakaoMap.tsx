@@ -1,4 +1,4 @@
-import Script from 'next/script';
+
 import { useEffect, useState } from 'react';
 import { Map, MapMarker } from 'react-kakao-maps-sdk';
 // TODO: Uncomment the following line to use the types
@@ -7,8 +7,6 @@ import { Map, MapMarker } from 'react-kakao-maps-sdk';
 const KakaoMap: React.FC = () => {
   const [searchKeyword, setSearchKeyword] = useState('클라이밍');
   const [searchResults, setSearchResults] = useState<{ lat: number; lng: number; }[]>([]);
-
-  const KAKAO_SDK_URL = `//dapi.kakao.com/v2/maps/sdk.js?appkey=${process.env.NEXT_PUBLIC_KAKAO_API_KEY}&autoload=false&libraries=services`;
 
   const handleSearch = async () => {
     // const mapContainer = document.getElementById('map') as HTMLElement, // 지도를 표시할 div 
@@ -37,7 +35,6 @@ const KakaoMap: React.FC = () => {
 
   return (
     <>
-      <Script src={KAKAO_SDK_URL} strategy="beforeInteractive" />
 
       <input type="text" value={searchKeyword} onChange={(e) => setSearchKeyword(e.target.value)} />
       <button className='text-white' onClick={handleSearch}>Search</button>
