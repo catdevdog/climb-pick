@@ -3,12 +3,6 @@ import Script from "next/script";
 import Head from "next/head";
 import "./globals.css";
 
-declare global {
-  interface Window {
-    kakao: any;
-  }
-}
-
 export const metadata: Metadata = {
   title: "클라임픽",
   description: "내 주변 클라이밍장 찾기",
