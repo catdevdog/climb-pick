@@ -14,10 +14,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   const KAKAO_SDK_URL = `//dapi.kakao.com/v2/maps/sdk.js?appkey=${process.env.NEXT_PUBLIC_KAKAO_API_KEY}&autoload=false&libraries=services`;
+  const GOOGLE_MAP_API_KEY = `https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAP_API_KEY}&callback=console.debug&libraries=maps,marker&v=beta`;
 
   return (
     <html lang="ko">
       <head>
+        <Script src={GOOGLE_MAP_API_KEY} strategy="beforeInteractive" />
         <Script src={KAKAO_SDK_URL} strategy="beforeInteractive" />
         <Head>
           <link
