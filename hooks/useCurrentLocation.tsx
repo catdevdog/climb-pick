@@ -1,9 +1,7 @@
 import { useState, useEffect } from "react";
 
 const useCurrentLocation = () => {
-  const [location, setLocation] = useState<{ lat: number; lng: number } | null>(
-    null
-  );
+  const [location, setLocation] = useState<{ lat: number; lng: number }>();
 
   useEffect(() => {
     const userAgent = navigator.userAgent.toLowerCase();
@@ -11,8 +9,8 @@ const useCurrentLocation = () => {
       /mobile|android|iphone|ipad|ipod|blackberry|windows phone/i.test(
         userAgent
       );
-
-    if (isMobileDevice && navigator.geolocation) {
+    // isMobileDevice && navigator.geolocation
+    if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
           setLocation({
@@ -20,8 +18,12 @@ const useCurrentLocation = () => {
             lng: position.coords.longitude,
           });
         },
-        () => {},
-        { enableHighAccuracy: true }
+        () => { },
+        {
+          enableHighAccuracy: true,
+          timeout: 5000, // 타임아웃 시간 설정
+          maximumAge: 0 // 캐시된 위치 사용 안 함 
+        }
       );
     } else {
       const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAP_API_KEY;
