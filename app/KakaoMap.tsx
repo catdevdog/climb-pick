@@ -1,6 +1,7 @@
+
 "use client";
 
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import { Map, MapMarker } from "react-kakao-maps-sdk";
 import type {
   PlacesSearchResult,
@@ -10,8 +11,19 @@ import type {
 } from "@/types/kakao";
 import useCurrentLocation from "@/hooks/useCurrentLocation";
 
-const KakaoMap: React.FC = () => {
-  const userLocation = useCurrentLocation();
+type KakaoMapProps = {
+  newListRequest: boolean;
+  setnewListRequest: (newListRequest: boolean) => void;
+};
+
+export default function KakaoMap({
+  newListRequest,
+  setnewListRequest
+}: KakaoMapProps) {
+  const initLocation = useCurrentLocation();
+
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [changedLocation, setChangedLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [isKakaoLoaded, setIsKakaoLoaded] = useState(false);
 
   const [searchKeyword, setSearchKeyword] = useState("클라이밍");
@@ -20,19 +32,35 @@ const KakaoMap: React.FC = () => {
   >([]);
 
   useEffect(() => {
-    const checkKakaoLoaded = () => {
-      if (window.kakao && window.kakao.maps) {
-        window.kakao.maps.load(() => {
-          setIsKakaoLoaded(true);
-        });
-      } else {
-        setTimeout(checkKakaoLoaded, 100);
-      }
-    };
-
-    checkKakaoLoaded();
+    window.kakao.maps.load(() => {
+      setIsKakaoLoaded(true);
+    });
   }, []);
 
+  /**
+   * @description
+   * page 에서 newListRequest 요청 시 (지도 중심이 변경된 후 사용자가 새로운 리스트를 요청)
+   */
+  useEffect(() => {
+    if (isKakaoLoaded && changedLocation) {
+      placeSearch(new kakao.maps.LatLng(changedLocation.lat, changedLocation.lng));
+    }
+  }, [newListRequest]);
+
+  /**
+   * @description
+   * 위치 초기화
+   */
+  useEffect(() => {
+    if (initLocation) {
+      setUserLocation(initLocation);
+    }
+  }, [initLocation]);
+
+  /**
+   * @description
+   * 위치 초기화 후 장소 검색
+   */
   useEffect(() => {
     if (isKakaoLoaded && userLocation) {
       placeSearch();
@@ -72,22 +100,31 @@ const KakaoMap: React.FC = () => {
     }
   };
 
+  // 지도 중심 변경
+  const onCenterChanged = (map: kakao.maps.Map) => {
+    setnewListRequest(true);
+    setChangedLocation({
+      lat: map.getCenter().getLat(),
+      lng: map.getCenter().getLng(),
+    });
+  }
   return (
     <>
-      <input
+      {/* <input
         type="text"
         value={searchKeyword}
         onChange={(e) => setSearchKeyword(e.target.value)}
       />
       <button className="text-white" onClick={() => placeSearch()}>
         Search
-      </button>
+      </button> */}
       {userLocation && (
         <Map
           id="map"
-          center={userLocation}
           level={5}
+          center={userLocation}
           style={{ width: "100%", height: "100%" }}
+          onCenterChanged={onCenterChanged}
         >
           {searchResults.map((result, idx) => (
             <MapMarker key={idx} position={result} />
@@ -97,5 +134,3 @@ const KakaoMap: React.FC = () => {
     </>
   );
 };
-
-export default KakaoMap;
