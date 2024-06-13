@@ -1,10 +1,10 @@
-'use client';
-import React, { useEffect } from 'react';
-import KakaoMap from './KakaoMap';
+"use client";
+
+import React, { useEffect } from "react";
+import KakaoMap from "./KakaoMap";
 
 export default function Home() {
-  useEffect(() => {
-  }, []);
+  useEffect(() => {}, []);
 
   return (
     <>

@@ -8,81 +8,61 @@ import type {
   Pagination,
   PlacesSearchResultItem,
 } from "@/types/kakao";
+import useCurrentLocation from "@/hooks/useCurrentLocation";
 
 const KakaoMap: React.FC = () => {
-  const [userLocation, setUserLocation] = useState<{
-    lat: number;
-    lng: number;
-  }>();
+  const userLocation = useCurrentLocation();
+  const [isKakaoLoaded, setIsKakaoLoaded] = useState(false);
+
   const [searchKeyword, setSearchKeyword] = useState("클라이밍");
   const [searchResults, setSearchResults] = useState<
     { lat: number; lng: number }[]
   >([]);
 
-  // mounted
   useEffect(() => {
-    alert(
-      "위치 정보 테스트 배포 1 \n현재 위치 정보 : navigator.geolocation.getCurrentPosition"
-    );
+    const checkKakaoLoaded = () => {
+      if (window.kakao && window.kakao.maps) {
+        window.kakao.maps.load(() => {
+          setIsKakaoLoaded(true);
+        });
+      } else {
+        setTimeout(checkKakaoLoaded, 100);
+      }
+    };
 
-    // const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAP_API_KEY;
-    // const url = `https://www.googleapis.com/geolocation/v1/geolocate?key=${apiKey}`;
-
-    // /**
-    //  * @description 현재 위치를 가져오는 API 호출 (첫 진입 시)
-    //  * @api https://developers.google.com/maps/documentation/geolocation/overview
-    //  */
-    // fetch(url, {
-    //   method: "POST",
-    //   headers: {
-    //     "Content-Type": "application/json",
-    //   },
-    //   body: JSON.stringify({}),
-    // })
-    //   .then((response) => response.json())
-    //   .then((data) => {
-    //     const lat = data.location.lat;
-    //     const lng = data.location.lng;
-
-    //     // 현재 위치 저장
-    //     setUserLocation({ lat, lng });
-
-    //     console.log("Latitude: " + lat + ", Longitude: " + lng);
-    //   })
-    //   .catch((error) => {
-    //     console.error("Error:", error);
-    //   });
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setUserLocation({
-            lat: position.coords.latitude,
-            lng: position.coords.longitude,
-          });
-        },
-        () => {},
-        { enableHighAccuracy: true }
-      );
-    }
+    checkKakaoLoaded();
   }, []);
 
-  const handleSearch = async () => {
+  useEffect(() => {
+    if (isKakaoLoaded && userLocation) {
+      placeSearch();
+    }
+  }, [isKakaoLoaded, userLocation]);
+
+  const placeSearch = (location?: kakao.maps.LatLng) => {
+    // locaiton이 없으면 현재 위치로 검색
+
+    if (!window.kakao || !window.kakao.maps) return;
+
+    const ps = new window.kakao.maps.services.Places();
     const searchOption = {
-      location: new kakao.maps.LatLng(userLocation!.lat, userLocation!.lng),
+      location: new window.kakao.maps.LatLng(
+        userLocation!.lat,
+        userLocation!.lng
+      ),
     };
-    const ps = new kakao.maps.services.Places();
-    ps.keywordSearch(searchKeyword, placesSearchCB, searchOption);
+
+    ps.keywordSearch(searchKeyword, placeMarkerSet, {
+      location: location || searchOption.location,
+    });
   };
 
-  // 장소검색이 완료됐을 때 호출되는 콜백함수 입니다
-  function placesSearchCB(
+  const placeMarkerSet = (
     result: PlacesSearchResult,
     status: Status,
     pagination: Pagination
-  ) {
-    console.log(result, status, pagination);
-
-    if (status === kakao.maps.services.Status.OK) {
+  ) => {
+    if (status === window.kakao.maps.services.Status.OK) {
       setSearchResults(
         result.map((place: PlacesSearchResultItem) => ({
           lat: Number(place.y),
@@ -90,7 +70,7 @@ const KakaoMap: React.FC = () => {
         }))
       );
     }
-  }
+  };
 
   return (
     <>
@@ -99,21 +79,18 @@ const KakaoMap: React.FC = () => {
         value={searchKeyword}
         onChange={(e) => setSearchKeyword(e.target.value)}
       />
-      <button className="text-white" onClick={handleSearch}>
+      <button className="text-white" onClick={() => placeSearch()}>
         Search
       </button>
       {userLocation && (
         <Map
           id="map"
-          center={userLocation as { lat: number; lng: number }}
+          center={userLocation}
           level={5}
           style={{ width: "100%", height: "100%" }}
         >
           {searchResults.map((result, idx) => (
-            <MapMarker
-              key={idx}
-              position={{ lat: result.lat, lng: result.lng }}
-            />
+            <MapMarker key={idx} position={result} />
           ))}
         </Map>
       )}
