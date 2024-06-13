@@ -19,34 +19,51 @@ const KakaoMap: React.FC = () => {
     { lat: number; lng: number }[]
   >([]);
 
+  // mounted
   useEffect(() => {
-    const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAP_API_KEY;
-    const url = `https://www.googleapis.com/geolocation/v1/geolocate?key=${apiKey}`;
+    alert(
+      "위치 정보 테스트 배포 1 \n현재 위치 정보 : navigator.geolocation.getCurrentPosition"
+    );
 
-    /**
-     * @description 현재 위치를 가져오는 API 호출 (첫 진입 시)
-     * @api https://developers.google.com/maps/documentation/geolocation/overview
-     */
-    fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({}),
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        const lat = data.location.lat;
-        const lng = data.location.lng;
+    // const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAP_API_KEY;
+    // const url = `https://www.googleapis.com/geolocation/v1/geolocate?key=${apiKey}`;
 
-        // 현재 위치 저장
-        setUserLocation({ lat, lng });
+    // /**
+    //  * @description 현재 위치를 가져오는 API 호출 (첫 진입 시)
+    //  * @api https://developers.google.com/maps/documentation/geolocation/overview
+    //  */
+    // fetch(url, {
+    //   method: "POST",
+    //   headers: {
+    //     "Content-Type": "application/json",
+    //   },
+    //   body: JSON.stringify({}),
+    // })
+    //   .then((response) => response.json())
+    //   .then((data) => {
+    //     const lat = data.location.lat;
+    //     const lng = data.location.lng;
 
-        console.log("Latitude: " + lat + ", Longitude: " + lng);
-      })
-      .catch((error) => {
-        console.error("Error:", error);
-      });
+    //     // 현재 위치 저장
+    //     setUserLocation({ lat, lng });
+
+    //     console.log("Latitude: " + lat + ", Longitude: " + lng);
+    //   })
+    //   .catch((error) => {
+    //     console.error("Error:", error);
+    //   });
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setUserLocation({
+            lat: position.coords.latitude,
+            lng: position.coords.longitude,
+          });
+        },
+        () => {},
+        { enableHighAccuracy: true }
+      );
+    }
   }, []);
 
   const handleSearch = async () => {
