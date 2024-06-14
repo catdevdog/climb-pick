@@ -10,7 +10,7 @@ const useCurrentLocation = () => {
         userAgent
       );
     // isMobileDevice && navigator.geolocation
-    if (navigator.geolocation) {
+    if (isMobileDevice && navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
           setLocation({
@@ -18,11 +18,11 @@ const useCurrentLocation = () => {
             lng: position.coords.longitude,
           });
         },
-        () => { },
+        () => {},
         {
           enableHighAccuracy: true,
           timeout: 5000, // 타임아웃 시간 설정
-          maximumAge: 0 // 캐시된 위치 사용 안 함 
+          maximumAge: 0, // 캐시된 위치 사용 안 함
         }
       );
     } else {
