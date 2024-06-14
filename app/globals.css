@@ -57,5 +57,6 @@ body {
 @layer base {
   body {
     font-family: "LINESeedKR", sans-serif;
+    /* line-height: 1.5; */
   }
 }

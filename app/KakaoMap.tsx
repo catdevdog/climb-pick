@@ -1,7 +1,7 @@
 "use client";
 
 import { use, useEffect, useState } from "react";
-import { Map, MapMarker } from "react-kakao-maps-sdk";
+import { Map, MapMarker, CustomOverlayMap } from "react-kakao-maps-sdk";
 import type {
   PlacesSearchResult,
   Status,
@@ -20,6 +20,7 @@ export default function KakaoMap({
   setnewListRequest,
 }: KakaoMapProps) {
   const initLocation = useCurrentLocation();
+  const [isKakaoLoaded, setIsKakaoLoaded] = useState(false);
 
   const [userLocation, setUserLocation] = useState<{
     lat: number;
@@ -29,12 +30,14 @@ export default function KakaoMap({
     lat: number;
     lng: number;
   } | null>(null);
-  const [isKakaoLoaded, setIsKakaoLoaded] = useState(false);
 
   const [searchKeyword, setSearchKeyword] = useState("클라이밍");
   const [searchResults, setSearchResults] = useState<PlacesSearchResultItem[]>(
     []
   );
+
+  const [onDetail, setOnDetail] = useState(false);
+  const [selectedPlace, setSelectedPlace] = useState<PlacesSearchResultItem>();
 
   useEffect(() => {
     window.kakao.maps.load(() => {
@@ -74,6 +77,12 @@ export default function KakaoMap({
     }
   }, [isKakaoLoaded, userLocation]);
 
+  useEffect(() => {
+    if (selectedPlace) {
+      console.log(selectedPlace);
+    }
+  }, [selectedPlace]);
+
   const placeSearch = (location?: kakao.maps.LatLng) => {
     // locaiton이 없으면 현재 위치로 검색
 
@@ -110,6 +119,11 @@ export default function KakaoMap({
       lng: map.getCenter().getLng(),
     });
   };
+
+  const onSelectPlace = (place: PlacesSearchResultItem) => {
+    setOnDetail(true);
+    setSelectedPlace(place);
+  };
   return (
     <>
       {/* <input
@@ -132,10 +146,60 @@ export default function KakaoMap({
             <MapMarker
               key={idx}
               position={{ lng: Number(result.x), lat: Number(result.y) }}
+              image={{
+                src: "/images/marker_white.png", // 마커이미지의 주소입니다
+                size: {
+                  width: 25,
+                  height: 25,
+                }, // 마커이미지의 크기입니다
+                options: {
+                  offset: {
+                    x: 12.5,
+                    y: 12.5,
+                  }, // 마커이미지의 옵션입니다. 마커의 좌표와 일치시킬 이미지 안에서의 좌표를 설정합니다.
+                },
+              }}
             >
-              <div>{result.place_name}</div>
+              {/* <div>{result.place_name}</div> */}
             </MapMarker>
           ))}
+          {!onDetail &&
+            searchResults.map((result, idx) => (
+              <CustomOverlayMap
+                key={result.id}
+                position={{ lng: Number(result.x), lat: Number(result.y) }}
+                yAnchor={1}
+                xAnchor={0}
+              >
+                <div
+                  onClick={() => onSelectPlace(result)}
+                  className="bg-black bg-opacity-80 text-white p-1 px-2 border border-black rounded-lg rounded-bl-none"
+                >
+                  <span className="">{result.place_name}</span>
+                </div>
+              </CustomOverlayMap>
+            ))}
+          {onDetail && selectedPlace && (
+            <CustomOverlayMap
+              position={{
+                lng: Number(selectedPlace.x),
+                lat: Number(selectedPlace.y),
+              }}
+              yAnchor={1}
+              xAnchor={0}
+            >
+              <div
+                onClick={() => setOnDetail(false)}
+                className="bg-black text-white p-1 px-2 border border-black rounded-lg rounded-bl-none"
+              >
+                <p className="font-bold text-lg mb-2">
+                  {selectedPlace.place_name}
+                </p>
+                <p>{selectedPlace.address_name}</p>
+                <p>{selectedPlace.phone}</p>
+              </div>
+            </CustomOverlayMap>
+          )}
         </Map>
       )}
     </>
