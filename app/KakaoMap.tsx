@@ -9,6 +9,7 @@ import type {
   PlacesSearchResultItem,
 } from "@/types/kakao";
 import useCurrentLocation from "@/hooks/useCurrentLocation";
+import useStore from "@/store/store";
 
 type KakaoMapProps = {
   newListRequest: boolean;
@@ -44,6 +45,10 @@ export default function KakaoMap({
       setIsKakaoLoaded(true);
     });
   }, []);
+
+  useEffect(() => {
+    useStore.setState({ searchResults });
+  }, [searchResults]);
 
   /**
    * @description

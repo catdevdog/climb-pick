@@ -2,10 +2,13 @@
 
 import React, { useEffect, useState } from "react";
 import KakaoMap from "./KakaoMap";
+import useStore from '../store/store';
 
 export default function Home() {
+  const { searchResults } = useStore();
+
   const [newListRequest, setnewListRequest] = useState(false);
-  useEffect(() => { }, []);
+  useEffect(() => { console.log(searchResults) }, [searchResults]);
 
   return (
     <>
