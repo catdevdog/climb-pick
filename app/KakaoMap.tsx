@@ -1,4 +1,3 @@
-
 "use client";
 
 import { use, useEffect, useState } from "react";
@@ -18,12 +17,18 @@ type KakaoMapProps = {
 
 export default function KakaoMap({
   newListRequest,
-  setnewListRequest
+  setnewListRequest,
 }: KakaoMapProps) {
   const initLocation = useCurrentLocation();
 
-  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
-  const [changedLocation, setChangedLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [userLocation, setUserLocation] = useState<{
+    lat: number;
+    lng: number;
+  } | null>(null);
+  const [changedLocation, setChangedLocation] = useState<{
+    lat: number;
+    lng: number;
+  } | null>(null);
   const [isKakaoLoaded, setIsKakaoLoaded] = useState(false);
 
   const [searchKeyword, setSearchKeyword] = useState("클라이밍");
@@ -43,7 +48,9 @@ export default function KakaoMap({
    */
   useEffect(() => {
     if (isKakaoLoaded && changedLocation) {
-      placeSearch(new kakao.maps.LatLng(changedLocation.lat, changedLocation.lng));
+      placeSearch(
+        new kakao.maps.LatLng(changedLocation.lat, changedLocation.lng)
+      );
     }
   }, [newListRequest]);
 
@@ -90,7 +97,7 @@ export default function KakaoMap({
     status: Status,
     pagination: Pagination
   ) => {
-    if (status === window.kakao.maps.services.Status.OK) {
+    if (status === kakao.maps.services.Status.OK) {
       setSearchResults(
         result.map((place: PlacesSearchResultItem) => ({
           lat: Number(place.y),
@@ -107,7 +114,7 @@ export default function KakaoMap({
       lat: map.getCenter().getLat(),
       lng: map.getCenter().getLng(),
     });
-  }
+  };
   return (
     <>
       {/* <input
@@ -133,4 +140,4 @@ export default function KakaoMap({
       )}
     </>
   );
-};
+}
