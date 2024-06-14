@@ -121,6 +121,11 @@ export default function KakaoMap({
   };
 
   const onSelectPlace = (place: PlacesSearchResultItem) => {
+    if (selectedPlace && selectedPlace.id === place.id) {
+      setOnDetail(false);
+      setSelectedPlace(undefined);
+      return;
+    }
     setOnDetail(true);
     setSelectedPlace(place);
   };
@@ -159,47 +164,31 @@ export default function KakaoMap({
                   }, // 마커이미지의 옵션입니다. 마커의 좌표와 일치시킬 이미지 안에서의 좌표를 설정합니다.
                 },
               }}
+              clickable={true}
+              onClick={() => onSelectPlace(result)}
             >
               {/* <div>{result.place_name}</div> */}
             </MapMarker>
           ))}
-          {!onDetail &&
-            searchResults.map((result, idx) => (
-              <CustomOverlayMap
-                key={result.id}
-                position={{ lng: Number(result.x), lat: Number(result.y) }}
-                yAnchor={1}
-                xAnchor={0}
-              >
-                <div
-                  onClick={() => onSelectPlace(result)}
-                  className="bg-black bg-opacity-80 text-white p-1 px-2 border border-black rounded-lg rounded-bl-none"
-                >
-                  <span className="">{result.place_name}</span>
-                </div>
-              </CustomOverlayMap>
-            ))}
-          {onDetail && selectedPlace && (
+          {searchResults.map((result, idx) => (
             <CustomOverlayMap
-              position={{
-                lng: Number(selectedPlace.x),
-                lat: Number(selectedPlace.y),
-              }}
-              yAnchor={1}
+              key={result.id}
+              position={{ lng: Number(result.x), lat: Number(result.y) }}
+              yAnchor={0}
               xAnchor={0}
             >
               <div
-                onClick={() => setOnDetail(false)}
-                className="bg-black text-white p-1 px-2 border border-black rounded-lg rounded-bl-none"
+                onClick={() => onSelectPlace(result)}
+                className={`bg-black bg-opacity-100 relative z-10 ${(selectedPlace && selectedPlace.id !== result.id) && 'bg-opacity-50 -z-10'} text-white p-1 px-2 rounded-lg rounded-tl-none`}
               >
-                <p className="font-bold text-lg mb-2">
-                  {selectedPlace.place_name}
-                </p>
-                <p>{selectedPlace.address_name}</p>
-                <p>{selectedPlace.phone}</p>
+                <p className="">{result.place_name}</p>
+                {/* {selectedPlace && selectedPlace.id === result.id && (<>
+                  <p>{selectedPlace.address_name}</p>
+                  <p>{selectedPlace.phone}</p>
+                </>)} */}
               </div>
             </CustomOverlayMap>
-          )}
+          ))}
         </Map>
       )}
     </>
