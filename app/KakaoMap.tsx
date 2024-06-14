@@ -32,9 +32,9 @@ export default function KakaoMap({
   const [isKakaoLoaded, setIsKakaoLoaded] = useState(false);
 
   const [searchKeyword, setSearchKeyword] = useState("클라이밍");
-  const [searchResults, setSearchResults] = useState<
-    { lat: number; lng: number }[]
-  >([]);
+  const [searchResults, setSearchResults] = useState<PlacesSearchResultItem[]>(
+    []
+  );
 
   useEffect(() => {
     window.kakao.maps.load(() => {
@@ -98,12 +98,7 @@ export default function KakaoMap({
     pagination: Pagination
   ) => {
     if (status === kakao.maps.services.Status.OK) {
-      setSearchResults(
-        result.map((place: PlacesSearchResultItem) => ({
-          lat: Number(place.y),
-          lng: Number(place.x),
-        }))
-      );
+      setSearchResults(result.map((item: any) => item));
     }
   };
 
@@ -134,7 +129,12 @@ export default function KakaoMap({
           onCenterChanged={onCenterChanged}
         >
           {searchResults.map((result, idx) => (
-            <MapMarker key={idx} position={result} />
+            <MapMarker
+              key={idx}
+              position={{ lng: Number(result.x), lat: Number(result.y) }}
+            >
+              <div>{result.place_name}</div>
+            </MapMarker>
           ))}
         </Map>
       )}
