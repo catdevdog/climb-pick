@@ -20,6 +20,8 @@ export default function KakaoMap({
   newListRequest,
   setnewListRequest,
 }: KakaoMapProps) {
+  const { $place } = useStore();
+
   const initLocation = useCurrentLocation();
   const [isKakaoLoaded, setIsKakaoLoaded] = useState(false);
 
@@ -47,7 +49,7 @@ export default function KakaoMap({
   }, []);
 
   useEffect(() => {
-    useStore.setState({ searchResults });
+    $place.setSearchResults(searchResults);
   }, [searchResults]);
 
   /**

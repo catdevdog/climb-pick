@@ -1,23 +1,21 @@
 // store.ts
 import { create } from 'zustand';
-import type {
-    PlacesSearchResultItem,
-} from "@/types/kakao";
+import type { PlacesSearchResultItem } from '@/types/kakao';
 
 interface State {
-    count: number;
-    increase: () => void;
-    decrease: () => void;
-
-    searchResults: PlacesSearchResultItem[];
+    $place: {
+        searchResults: PlacesSearchResultItem[],
+        setSearchResults: (results: PlacesSearchResultItem[]) => void;
+    }
 }
 
 const useStore = create<State>((set) => ({
-    count: 0,
-    increase: () => set((state) => ({ count: state.count + 1 })),
-    decrease: () => set((state) => ({ count: state.count - 1 })),
-
-    searchResults: [],
+    $place: {
+        searchResults: [],
+        setSearchResults: (results) => set((state) => ({
+            $place: { ...state.$place, searchResults: results },
+        })),
+    },
 }));
 
 export default useStore;
