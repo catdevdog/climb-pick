@@ -28,7 +28,7 @@ export default function Home() {
         ></KakaoMap>
         {newListRequest && (
           <Button
-            color="black"
+            color="primary"
             size="medium"
             className="fixed z-10 left-1/2 transform -translate-x-1/2 bottom-5"
             onClick={() => setnewListRequest(false)}

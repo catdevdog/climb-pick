@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 
 type ButtonProps = {
-    color: string;
+    color: 'black' | 'white' | 'primary' | 'secondary' | 'danger' | 'warning' | 'info';
     size: 'small' | 'medium' | 'large';
     border?: boolean
     rounded?: boolean
@@ -11,27 +11,28 @@ type ButtonProps = {
 };
 
 export default function Button({ color, size, rounded = true, border = false, onClick, children, className }: ButtonProps) {
-    const small = 'text-xs py-1 px-2';
+    const _layout = `${rounded ? 'rounded-full' : ''} ${border ? 'border' : ''} ${className}`
 
-    const medium = `text-md py-2 px-3`;
+    const _size = {
+        small: 'text-xs py-2 px-3',
+        medium: 'text-md py-2 px-4',
+        large: 'text-lg py-2 px-4'
+    }[size];
 
-    const large = 'text-lg py-3 px-4';
-
-    const layout = `${rounded ? 'rounded-full' : ''} ${border ? 'border' : ''} ${className}`
-
-    const style = {
+    const _color = {
         black: `bg-black text-white`,
         white: `bg-white text-black border`,
-        primary: `bg-${color} text-white`,
+        primary: `bg-black text-white`,
         secondary: `bg-white text-${color} border border-${color}`,
         danger: `bg-red-500 text-white`,
-        warning: `bg-yellow-500 text-white`
+        warning: `bg-yellow-500 text-white`,
+        info: `bg-blue-500 text-white`,
     }[color];
 
-    const computedClass = `${style} ${layout} ${size === 'small' ? small : size === 'medium' ? medium : large}`
+    const _class = `${_layout} ${_color} ${_size}`
 
     return (
-        <button className={computedClass} onClick={onClick}>
+        <button className={_class} onClick={onClick}>
             {children}
         </button>
     );
