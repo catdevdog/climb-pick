@@ -10,7 +10,7 @@ const useCurrentLocation = () => {
         userAgent
       );
     // isMobileDevice && navigator.geolocation
-    if (navigator.geolocation) {
+    if (isMobileDevice && navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
           setLocation({
