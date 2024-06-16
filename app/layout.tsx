@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Script from "next/script";
-import Head from "next/head";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -21,37 +20,36 @@ export default function RootLayout({
       <head>
         <Script src={GOOGLE_MAP_API_KEY} strategy="beforeInteractive" />
         <Script src={KAKAO_SDK_URL} strategy="beforeInteractive" />
-        <Head>
-          <link
-            rel="apple-touch-icon"
-            sizes="180x180"
-            href="/apple-touch-icon.png"
-          />
-          <link
-            rel="icon"
-            type="image/png"
-            sizes="16x16"
-            href="/favicon-16x16.png"
-          />
-          <link
-            rel="icon"
-            type="image/png"
-            sizes="32x32"
-            href="/favicon-32x32.png"
-          />
-          <link
-            rel="icon"
-            type="image/png"
-            sizes="192x192"
-            href="/android-chrome-192x192.png"
-          />
-          <link
-            rel="icon"
-            type="image/png"
-            sizes="512x512"
-            href="/android-chrome-512x512.png"
-          />
-        </Head>
+        <link
+          rel="apple-touch-icon"
+          sizes="180x180"
+          href="/apple-touch-icon.png"
+        />
+        <link
+          rel="icon"
+          type="image/png"
+          sizes="16x16"
+          href="/favicon-16x16.png"
+        />
+        <link
+          rel="icon"
+          type="image/png"
+          sizes="32x32"
+          href="/favicon-32x32.png"
+        />
+        <link
+          rel="icon"
+          type="image/png"
+          sizes="192x192"
+          href="/android-chrome-192x192.png"
+        />
+        <link
+          rel="icon"
+          type="image/png"
+          sizes="512x512"
+          href="/android-chrome-512x512.png"
+        />
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,300,0,0" />
       </head>
       <body className="text-black">{children}</body>
     </html>
