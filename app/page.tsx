@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import KakaoMap from "./KakaoMap";
 import useStore from '../store/store';
+import Button from "@/components/Button";
 import type { PlacesSearchResultItem } from '@/types/kakao';
 
 export default function Home() {
@@ -26,17 +27,19 @@ export default function Home() {
           setnewListRequest={setnewListRequest}
         ></KakaoMap>
         {newListRequest && (
-          <button
-            className="fixed left-1/2 transform -translate-x-1/2 bottom-5 bg-black text-white text-md rounded-full z-10 py-2 px-4 font-LINESeedKR font-bold"
+          <Button
+            color="black"
+            size="medium"
+            className="fixed z-10 left-1/2 transform -translate-x-1/2 bottom-5"
             onClick={() => setnewListRequest(false)}
           >
             현재 위치에서 검색
-          </button>
+          </Button>
         )}
         {
           sortSearchResults.length > 0 && (
             <button
-              className="fixed bottom-5 left-5 bg-black text-white text-md h-10 w-10 flex justify-center items-center rounded-full z-10"
+              className="fixed z-10 bottom-5 left-5 bg-black text-white text-md h-10 w-10 flex justify-center items-center rounded-full"
               onClick={() => setOpenList(!openList)}
             >
               <img className="pb-1" width={20} src="/images/icons/list_icon.png" alt="" />

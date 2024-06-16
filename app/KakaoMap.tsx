@@ -149,7 +149,7 @@ export default function KakaoMap({
       {userLocation && (
         <Map
           id="map"
-          level={5}
+          level={6}
           center={userLocation}
           style={{ width: "100%", height: "100%" }}
           onCenterChanged={onCenterChanged}
