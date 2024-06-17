@@ -28,24 +28,27 @@ export default function Home() {
         ></KakaoMap>
         {newListRequest && (
           <Button
-            color="primary"
+            color="white"
             size="medium"
             className="fixed z-10 left-1/2 transform -translate-x-1/2 bottom-5"
             onClick={() => setnewListRequest(false)}
           >
-            현재 위치에서 검색
+            이 지역에서 재검색
           </Button>
         )}
         {
           sortSearchResults.length > 0 && (
-            <button
-              className="fixed z-10 bottom-5 left-5 bg-black text-white text-md h-10 w-10 flex justify-center items-center rounded-full"
+            <Button
+              color="info"
+              size="medium"
+              icon
+              className="fixed z-10 bottom-5 left-5 rounded-full"
               onClick={() => setOpenList(!openList)}
             >
-              <span className="material-symbols-outlined">
+              <i className="material-symbols-outlined">
                 {openList ? 'close' : 'menu'}
-              </span>
-            </button>
+              </i>
+            </Button>
           )
         }
         {
