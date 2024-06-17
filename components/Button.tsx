@@ -1,19 +1,19 @@
-import React, { useEffect, useState } from "react";
+import { ReactNode } from "react";
 
 type ButtonProps = {
   color:
-    | "black"
-    | "white"
-    | "primary"
-    | "secondary"
-    | "danger"
-    | "warning"
-    | "info";
+  | "black"
+  | "white"
+  | "primary"
+  | "secondary"
+  | "danger"
+  | "warning"
+  | "info";
   size: "small" | "medium" | "large";
   border?: boolean;
   rounded?: boolean;
   onClick: () => void;
-  children: React.ReactNode;
+  children: ReactNode;
   className?: string;
   icon?: boolean;
 };
@@ -26,34 +26,32 @@ export default function Button({
   icon = false,
   onClick,
   children,
-  className,
+  className = "",
 }: ButtonProps) {
-  const _base = `${rounded ? "rounded-full" : ""} ${
-    border ? "border" : ""
-  } ${className}`;
+  const baseClasses = `${rounded ? "rounded-full" : ""} ${border ? "border" : ""} ${className}`;
 
-  const _size = {
+  const sizeClasses = {
     small: `text-xs ${!icon ? "py-2 px-3" : "p-2"}`,
     medium: `text-md ${!icon ? "py-2 px-4" : "p-2"}`,
-    large: `text-lg  ${!icon ? "py-2 px-4" : "p-2"}`,
+    large: `text-lg ${!icon ? "py-2 px-4" : "p-2"}`,
   }[size];
 
-  const _color = {
-    black: `bg-black text-white`,
-    white: `bg-white text-black border`,
-    primary: `bg-black text-white`,
-    secondary: `bg-white text-wtite border`,
-    danger: `bg-red-500 text-white`,
-    warning: `bg-yellow-500 text-white`,
-    info: `bg-blue-500 text-white`,
+  const colorClasses = {
+    black: "bg-black text-white",
+    white: "bg-white text-black border",
+    primary: "bg-blue-500 text-white",
+    secondary: "bg-gray-500 text-white border",
+    danger: "bg-red-500 text-white",
+    warning: "bg-yellow-500 text-white",
+    info: "bg-blue-500 text-white",
   }[color];
 
-  const _icon = icon && "flex items-center justify-center";
+  const iconClasses = icon ? "flex items-center justify-center" : "";
 
-  const _class = `${_base} ${_color} ${_size} ${_icon}`;
+  const combinedClasses = `${baseClasses} ${colorClasses} ${sizeClasses} ${iconClasses}`;
 
   return (
-    <button className={_class} onClick={onClick}>
+    <button className={combinedClasses} onClick={onClick}>
       {children}
     </button>
   );
