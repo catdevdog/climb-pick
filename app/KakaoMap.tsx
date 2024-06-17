@@ -149,7 +149,7 @@ export default function KakaoMap({
       {userLocation && (
         <Map
           id="map"
-          level={5}
+          level={6}
           center={userLocation}
           style={{ width: "100%", height: "100%" }}
           onCenterChanged={onCenterChanged}
@@ -186,7 +186,11 @@ export default function KakaoMap({
             >
               <div
                 onClick={() => onSelectPlace(result)}
-                className={`bg-black bg-opacity-100 relative z-10 ${(selectedPlace && selectedPlace.id !== result.id) && 'bg-opacity-50 -z-10'} text-white p-1 px-2 rounded-lg rounded-tl-none`}
+                className={`bg-black bg-opacity-100 relative z-10 ${
+                  selectedPlace &&
+                  selectedPlace.id !== result.id &&
+                  "bg-opacity-50 -z-10"
+                } text-white p-1 px-2 rounded-lg rounded-tl-none`}
               >
                 <p className="">{result.place_name}</p>
                 {/* {selectedPlace && selectedPlace.id === result.id && (<>
