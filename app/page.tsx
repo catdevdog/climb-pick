@@ -42,7 +42,9 @@ export default function Home() {
               className="fixed z-10 bottom-5 left-5 bg-black text-white text-md h-10 w-10 flex justify-center items-center rounded-full"
               onClick={() => setOpenList(!openList)}
             >
-              <img className="pb-1" width={20} src="/images/icons/list_icon.png" alt="" />
+              <span className="material-symbols-outlined">
+                {openList ? 'close' : 'menu'}
+              </span>
             </button>
           )
         }
