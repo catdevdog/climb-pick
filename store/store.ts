@@ -1,4 +1,3 @@
-// store.ts
 import { create } from 'zustand';
 import type { PlacesSearchResultItem } from '@/types/kakao';
 
