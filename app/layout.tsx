@@ -16,7 +16,7 @@ export default function RootLayout({
   const GOOGLE_MAP_API_KEY = `https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAP_API_KEY}&callback=initGoogleMaps&libraries=maps,marker,places&v=beta`;
 
   return (
-    <html lang="ko">
+    <html lang="ko" className=" h-full">
       <head>
         <Script src={GOOGLE_MAP_API_KEY} strategy="beforeInteractive" />
         <Script src={KAKAO_SDK_URL} strategy="beforeInteractive" />
@@ -54,7 +54,7 @@ export default function RootLayout({
           href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,300,0,0"
         />
       </head>
-      <body className="text-black">{children}</body>
+      <body className="text-black bg-white">{children}</body>
     </html>
   );
 }
