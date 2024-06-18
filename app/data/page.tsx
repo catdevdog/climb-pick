@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import useFirebase from '@/hooks/useFirebase';
 
-const TestPage: React.FC = () => {
+export default function Test() {
   const { dataSet } = useFirebase()
   const [inputValue, setInputValue] = useState('');
 
@@ -22,5 +22,3 @@ const TestPage: React.FC = () => {
     </div>
   );
 };
-
-export default TestPage;
