@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import Link from "next/link";
 import KakaoMap from "./KakaoMap";
 import useStore from "../store/store";
 import Button from "@/components/Button";
@@ -26,6 +27,7 @@ export default function Home() {
   return (
     <>
       <div className="w-full h-screen">
+        <Link href={'/data'}>db test</Link>
         <div id="search-map" className="display-none"></div>
         <KakaoMap
           newListRequest={newListRequest}
