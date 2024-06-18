@@ -13,6 +13,7 @@ jobs:
     env:
       NEXT_PUBLIC_KAKAO_API_KEY: ${{ secrets.NEXT_PUBLIC_KAKAO_API_KEY }}
       NEXT_PUBLIC_GOOGLE_MAP_API_KEY: ${{ secrets.NEXT_PUBLIC_GOOGLE_MAP_API_KEY }}
+      NEXT_PUBLIC_FIREBASE_DB: ${{ secrets.NEXT_PUBLIC_FIREBASE_DB }}
     steps:
       - uses: actions/checkout@v4
       - run: npm ci && npm run build
@@ -26,3 +27,4 @@ jobs:
         run: |
           echo "NEXT_PUBLIC_KAKAO_API_KEY=${{ secrets.NEXT_PUBLIC_KAKAO_API_KEY }}" >> .env
           echo "NEXT_PUBLIC_GOOGLE_MAP_API_KEY=${{ secrets.NEXT_PUBLIC_GOOGLE_MAP_API_KEY }}" >> .env
+          echo "NEXT_PUBLIC_FIREBASE_DB=${{ secrets.NEXT_PUBLIC_FIREBASE_DB }}" >> .env
