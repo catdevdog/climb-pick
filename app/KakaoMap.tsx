@@ -42,6 +42,9 @@ export default function KakaoMap({
   const [onDetail, setOnDetail] = useState(false);
   const [selectedPlace, setSelectedPlace] = useState<PlacesSearchResultItem>();
 
+  //test
+  const [placeId, setPlaceId] = useState<string>();
+
   useEffect(() => {
     window.kakao.maps.load(() => {
       setIsKakaoLoaded(true);
@@ -90,7 +93,7 @@ export default function KakaoMap({
     }
   }, [selectedPlace]);
 
-  const placeSearch = (location?: kakao.maps.LatLng) => {
+  const placeSearch = async (location?: kakao.maps.LatLng) => {
     // locaiton이 없으면 현재 위치로 검색
 
     if (!window.kakao || !window.kakao.maps) return;
@@ -105,6 +108,46 @@ export default function KakaoMap({
 
     ps.keywordSearch(searchKeyword, placeMarkerSet, {
       location: location || searchOption.location,
+    });
+
+    // const request = {
+    //   query: searchKeyword,
+    //   fields: [
+    //     "name",
+    //     "geometry",
+    //     "opening_hours",
+    //     "formatted_address",
+    //     "place_id",
+    //   ],
+    // };
+
+    const rqLocation = location || searchOption.location;
+
+    const request = {
+      location: new google.maps.LatLng(
+        rqLocation.getLat(),
+        rqLocation.getLng()
+      ),
+      radius: 3000,
+      // type: "sports", // 원하는 장소 유형을 지정합니다.
+      keyword: searchKeyword, // 추가 키워드를 사용할 수 있습니다.
+      maxResults: 15,
+    };
+
+    const service = new google.maps.places.PlacesService(
+      document.getElementById("search-map") as HTMLDivElement
+    );
+
+    service.nearbySearch(request, (results, status) => {
+      if (status === google.maps.places.PlacesServiceStatus.OK && results) {
+        console.log(results);
+        results.forEach((place) => {
+          // console.log(place.name, place?.geometry?.location?.toString());
+          // 여기서 장소 정보를 처리합니다.
+        });
+      } else {
+        console.error("Error:", status);
+      }
     });
   };
 
