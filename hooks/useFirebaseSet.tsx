@@ -13,3 +13,5 @@ export function useFirebaseSet(key: string, value: string) {
       console.error('Error sending data to Firebase', error);
     });
 }
+
+export default useFirebaseSet
