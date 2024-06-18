@@ -1,9 +1,10 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useFirebaseSet } from '@/hooks/useFirebaseSet';
+import useFirebase from '@/hooks/useFirebase';
 
 const TestPage: React.FC = () => {
+  const { dataSet } = useFirebase()
   const [inputValue, setInputValue] = useState('');
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -11,7 +12,7 @@ const TestPage: React.FC = () => {
   };
 
   const handleButtonClick = () => {
-    useFirebaseSet('test-key', inputValue);
+    dataSet('test-key', inputValue);
   };
 
   return (
