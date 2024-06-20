@@ -12,13 +12,9 @@ import useCurrentLocation from "@/hooks/useCurrentLocation";
 import useStore from "@/store/store";
 
 type KakaoMapProps = {
-	newListRequest?: boolean;
-	setNewListRequest?: (newListRequest: boolean) => void;
 };
 
 export default function KakaoMap({
-	newListRequest,
-	setNewListRequest,
 }: KakaoMapProps) {
 	const { $place } = useStore();
 	const initLocation = useCurrentLocation();
@@ -28,7 +24,6 @@ export default function KakaoMap({
 	const [changedLocation, setChangedLocation] = useState<{ lat: number; lng: number } | null>(null);
 
 	const [searchKeyword, setSearchKeyword] = useState("클라이밍");
-	const [searchResults, setSearchResults] = useState<PlacesSearchResultItem[]>([]);
 	const [googleResults, setGoogleResults] = useState<any[]>([]);
 
 	const [onDetail, setOnDetail] = useState(false);
@@ -50,9 +45,9 @@ export default function KakaoMap({
 		}
 	}, [isKakaoLoaded, userLocation]);
 
-	useEffect(() => {
-		$place.setSearchResults(searchResults);
-	}, [searchResults]);
+	// useEffect(() => {
+	// 	$place.setSearchResults(searchResults);
+	// }, [searchResults]);
 
 	useEffect(() => {
 		if (selectedPlace) {
@@ -74,16 +69,9 @@ export default function KakaoMap({
 	const placeSearch = (location?: kakao.maps.LatLng) => {
 		if (!window.kakao || !window.kakao.maps) return;
 
-		console.log('place search')
-
-		const ps = new window.kakao.maps.services.Places();
 		const searchOption = {
 			location: new window.kakao.maps.LatLng(userLocation!.lat, userLocation!.lng),
 		};
-
-		ps.keywordSearch(searchKeyword, placeMarkerSet, {
-			location: location || searchOption.location,
-		});
 
 		const rqLocation = location || searchOption.location;
 
@@ -104,17 +92,6 @@ export default function KakaoMap({
 				console.error("Error:", status);
 			}
 		});
-	};
-
-	/**
-	 * @description 검색 결과를 설정합니다.
-	 * @param {PlacesSearchResult} result - 검색 결과
-	 * @param {Status} status - 검색 상태
-	 */
-	const placeMarkerSet = (result: PlacesSearchResult, status: Status) => {
-		if (status === kakao.maps.services.Status.OK) {
-			setSearchResults(result.map((item: any) => item));
-		}
 	};
 
 	/**
