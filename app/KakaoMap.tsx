@@ -2,23 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { Map, MapMarker, CustomOverlayMap } from "react-kakao-maps-sdk";
-import type {
-	PlacesSearchResult,
-	Status,
-	Pagination,
-	PlacesSearchResultItem,
-} from "@/types/kakao";
 import useCurrentLocation from "@/hooks/useCurrentLocation";
 import useStore from "@/store/store";
 
 type KakaoMapProps = {
-	newListRequest?: boolean;
-	setNewListRequest?: (newListRequest: boolean) => void;
 };
 
 export default function KakaoMap({
-	newListRequest,
-	setNewListRequest,
 }: KakaoMapProps) {
 	const { $place } = useStore();
 	const initLocation = useCurrentLocation();
@@ -28,11 +18,9 @@ export default function KakaoMap({
 	const [changedLocation, setChangedLocation] = useState<{ lat: number; lng: number } | null>(null);
 
 	const [searchKeyword, setSearchKeyword] = useState("클라이밍");
-	const [searchResults, setSearchResults] = useState<PlacesSearchResultItem[]>([]);
-	const [googleResults, setGoogleResults] = useState<any[]>([]);
+	const [googleResults, setGoogleResults] = useState<google.maps.places.PlaceResult[]>([]);
 
-	const [onDetail, setOnDetail] = useState(false);
-	const [selectedPlace, setSelectedPlace] = useState<PlacesSearchResultItem>();
+	const [selectedPlace, setSelectedPlace] = useState<google.maps.places.PlaceResult>();
 
 	useEffect(() => {
 		window.kakao.maps.load(() => setIsKakaoLoaded(true));
@@ -49,10 +37,6 @@ export default function KakaoMap({
 			placeSearch();
 		}
 	}, [isKakaoLoaded, userLocation]);
-
-	useEffect(() => {
-		$place.setSearchResults(searchResults);
-	}, [searchResults]);
 
 	useEffect(() => {
 		if (selectedPlace) {
@@ -74,16 +58,9 @@ export default function KakaoMap({
 	const placeSearch = (location?: kakao.maps.LatLng) => {
 		if (!window.kakao || !window.kakao.maps) return;
 
-		console.log('place search')
-
-		const ps = new window.kakao.maps.services.Places();
 		const searchOption = {
 			location: new window.kakao.maps.LatLng(userLocation!.lat, userLocation!.lng),
 		};
-
-		ps.keywordSearch(searchKeyword, placeMarkerSet, {
-			location: location || searchOption.location,
-		});
 
 		const rqLocation = location || searchOption.location;
 
@@ -107,17 +84,6 @@ export default function KakaoMap({
 	};
 
 	/**
-	 * @description 검색 결과를 설정합니다.
-	 * @param {PlacesSearchResult} result - 검색 결과
-	 * @param {Status} status - 검색 상태
-	 */
-	const placeMarkerSet = (result: PlacesSearchResult, status: Status) => {
-		if (status === kakao.maps.services.Status.OK) {
-			setSearchResults(result.map((item: any) => item));
-		}
-	};
-
-	/**
 	 * @description 지도 중심 변경 시 호출됩니다.
 	 * @param {kakao.maps.Map} map - 변경된 지도 객체
 	 */
@@ -132,15 +98,9 @@ export default function KakaoMap({
 
 	/**
 	 * @description 장소 선택 시 호출됩니다.
-	 * @param {PlacesSearchResultItem} place - 선택된 장소
+	 * @param {google.maps.places.PlaceResult} place - 선택된 장소
 	 */
-	const onSelectPlace = (place: PlacesSearchResultItem) => {
-		if (selectedPlace && selectedPlace.id === place.id) {
-			setOnDetail(false);
-			setSelectedPlace(undefined);
-			return;
-		}
-		setOnDetail(true);
+	const onSelectPlace = (place: google.maps.places.PlaceResult) => {
 		setSelectedPlace(place);
 	};
 
@@ -158,8 +118,8 @@ export default function KakaoMap({
 						<MapMarker
 							key={idx}
 							position={{
-								lat: result.geometry.location.lat(),
-								lng: result.geometry.location.lng(),
+								lat: result.geometry?.location?.lat()!,
+								lng: result.geometry?.location?.lng()!,
 							}}
 							image={{
 								src: "/images/marker_white.png",
@@ -172,15 +132,15 @@ export default function KakaoMap({
 						<CustomOverlayMap
 							key={result.place_id}
 							position={{
-								lat: result.geometry.location.lat(),
-								lng: result.geometry.location.lng(),
+								lat: result.geometry?.location?.lat()!,
+								lng: result.geometry?.location?.lng()!,
 							}}
 							yAnchor={0}
 							xAnchor={0}
 						>
 							<div
 								onClick={() => onSelectPlace(result)}
-								className={`bg-black bg-opacity-100 relative z-10 ${selectedPlace && selectedPlace.id !== result.id && "bg-opacity-50 -z-10"
+								className={`bg-black bg-opacity-100 relative z-10 ${selectedPlace && selectedPlace.place_id !== result.place_id && "bg-opacity-50 -z-10"
 									} text-white p-1 px-2 rounded-lg rounded-tl-none`}
 							>
 								<p className="">{result.name}</p>
