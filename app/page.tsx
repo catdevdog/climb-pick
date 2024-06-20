@@ -14,7 +14,6 @@ export default function Home() {
   >([]);
   const [openList, setOpenList] = useState(false);
 
-  const [newListRequest, setnewListRequest] = useState(false);
   useEffect(() => {
     if ($place.searchResults.length > 0) {
       const sortedResults = $place.searchResults.sort(
@@ -30,20 +29,18 @@ export default function Home() {
         <Link href={'/data'}>db test</Link>
         <div id="search-map" className="display-none"></div>
         <KakaoMap
-          newListRequest={newListRequest}
-          setnewListRequest={setnewListRequest}
         ></KakaoMap>
-        {newListRequest && (
+        {$place.centerChanged && (
           <Button
-            color="white"
+            color="info"
             size="medium"
             className="fixed z-10 left-1/2 transform -translate-x-1/2 bottom-5"
-            onClick={() => setnewListRequest(false)}
+            onClick={() => $place.setSearchRequest(true)}
           >
             이 지역에서 재검색
           </Button>
         )}
-        {sortSearchResults.length > 0 && (
+        {/* {sortSearchResults.length > 0 && (
           <Button
             color="info"
             size="medium"
@@ -55,8 +52,8 @@ export default function Home() {
               {openList ? "close" : "menu"}
             </i>
           </Button>
-        )}
-        {openList && (
+        )} */}
+        {/* {openList && (
           <div className="bg-white bg-opacity-80 fixed bottom-16 left-5 p-2 rounded-lg z-10 overflow-y-auto h-2/3">
             {sortSearchResults.map((result, idx) => (
               <div
@@ -64,12 +61,12 @@ export default function Home() {
                 className="flex justify-between items-center border-gray-200 py-1"
               >
                 <div className="text-sm">{result.place_name}</div>
-                {/* <div className="text-xs">{result.address_name}</div> */}
+                <div className="text-xs">{result.address_name}</div>
                 <div className="text-xs pl-5">{result.distance}m</div>
               </div>
             ))}
           </div>
-        )}
+        )} */}
       </div>
     </>
   );
