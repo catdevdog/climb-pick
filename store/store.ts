@@ -10,8 +10,8 @@ interface State {
         searchRequest: boolean;
         setSearchRequest: (searchRequest: boolean) => void;
 
-        searchResults: PlacesSearchResultItem[],
-        setSearchResults: (results: PlacesSearchResultItem[]) => void;
+        searchResults: google.maps.places.PlaceResult[],
+        setSearchResults: (results: google.maps.places.PlaceResult[]) => void;
     }
 }
 

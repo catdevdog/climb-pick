@@ -15,12 +15,12 @@ export default function Home() {
   const [openList, setOpenList] = useState(false);
 
   useEffect(() => {
-    if ($place.searchResults.length > 0) {
-      const sortedResults = $place.searchResults.sort(
-        (a, b) => Number(a.distance) - Number(b.distance)
-      );
-      setSortSearchResults(sortedResults);
-    }
+    // if ($place.searchResults.length > 0) {
+    //   const sortedResults = $place.searchResults.sort(
+    //     (a, b) => Number(a.distance) - Number(b.distance)
+    //   );
+    //   setSortSearchResults(sortedResults);
+    // }
   }, [$place.searchResults]);
 
   return (
