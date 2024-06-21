@@ -77,6 +77,7 @@ export default function KakaoMap({
 		service.nearbySearch(request, (results, status) => {
 			if (status === google.maps.places.PlacesServiceStatus.OK && results) {
 				setGoogleResults(results);
+				$place.setSearchResults(results);
 			} else {
 				console.error("Error:", status);
 			}
