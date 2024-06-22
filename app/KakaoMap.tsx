@@ -89,7 +89,6 @@ export default function KakaoMap({
 	 * @param {kakao.maps.Map} map - 변경된 지도 객체
 	 */
 	const onCenterChanged = (map: kakao.maps.Map) => {
-		console.log('center changed')
 		$place.setcenterChanged(true);
 		setChangedLocation({
 			lat: map.getCenter().getLat(),

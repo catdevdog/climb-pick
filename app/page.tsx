@@ -15,17 +15,9 @@ export default function Home() {
   const [openList, setOpenList] = useState(false);
 
   useEffect(() => {
-    console.log($place.searchResults)
     if ($place.searchResults.length > 0) {
-      console.log('asd')
       setOpenList(true);
     }
-    // if ($place.searchResults.length > 0) {
-    //   const sortedResults = $place.searchResults.sort(
-    //     (a, b) => Number(a.distance) - Number(b.distance)
-    //   );
-    //   setSortSearchResults(sortedResults);
-    // }
   }, [$place.searchResults]);
 
   return (
@@ -66,10 +58,9 @@ export default function Home() {
                 className="flex justify-between items-center border-gray-200 py-1"
               >
                 <div className="flex items-center">
-                  <div className="w-10 h-10 bg-gray-200 rounded-full"></div>
                   <div className="ml-2">
                     <p className="text-sm font-bold">{result.name}</p>
-                    <p className="text-xs">{result.adr_address}</p>
+                    <p className="text-xs">{result.vicinity}</p>
                   </div>
                 </div>
               </div>
