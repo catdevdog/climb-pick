@@ -9,9 +9,6 @@ import type { PlacesSearchResultItem } from "@/types/kakao";
 
 export default function Home() {
   const { $place } = useStore();
-  const [sortSearchResults, setSortSearchResults] = useState<
-    PlacesSearchResultItem[]
-  >([]);
   const [openList, setOpenList] = useState(false);
 
   useEffect(() => {
@@ -23,7 +20,7 @@ export default function Home() {
   return (
     <>
       <div className="w-full h-screen">
-        <Link href={'/data'}>db test</Link>
+        {/* <Link href={'/data'}>db test</Link> */}
         <div id="search-map" className="display-none"></div>
         <KakaoMap
         ></KakaoMap>
