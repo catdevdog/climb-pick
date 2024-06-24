@@ -45,7 +45,6 @@ const useCurrentLocation = () => {
         });
     }
   }, []);
-
   return location;
 };
 

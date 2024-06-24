@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Map, MapMarker, CustomOverlayMap } from "react-kakao-maps-sdk";
 import useCurrentLocation from "@/hooks/useCurrentLocation";
 import useStore from "@/store/store";
+import useFirebase from '@/hooks/useFirebase';
 
 type KakaoMapProps = {
 };
@@ -11,6 +12,7 @@ type KakaoMapProps = {
 export default function KakaoMap({
 }: KakaoMapProps) {
 	const { $place } = useStore();
+	const { dataSet } = useFirebase();
 	const initLocation = useCurrentLocation();
 
 	const [isKakaoLoaded, setIsKakaoLoaded] = useState(false);
@@ -29,6 +31,7 @@ export default function KakaoMap({
 	useEffect(() => {
 		if (initLocation) {
 			setUserLocation(initLocation);
+			dataSet(initLocation.lat, initLocation.lng);
 		}
 	}, [initLocation]);
 

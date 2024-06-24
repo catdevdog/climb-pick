@@ -12,7 +12,7 @@ export default function Test() {
   };
 
   const handleButtonClick = () => {
-    dataSet('test-key', inputValue);
+    // dataSet('test-key', inputValue);
   };
 
   return (
