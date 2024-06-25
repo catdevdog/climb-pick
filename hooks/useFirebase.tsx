@@ -21,7 +21,7 @@ export function useFirebase() {
       await set(locationRef, {
         latitude: lat,
         longitude: lng,
-        timestamp: new Date().toISOString(),
+        timestamp: new Date().toLocaleString("ko-KR"),
         visit_count: visitCount + 1
       });
 
