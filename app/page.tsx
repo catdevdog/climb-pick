@@ -58,6 +58,7 @@ export default function Home() {
                   <div className="ml-2">
                     <p className="text-sm font-bold">{result.name}</p>
                     <p className="text-xs">{result.vicinity}</p>
+                    <p className="text-xs">{result.opening_hours?.open_now ? 'open' : 'closed'}</p>
                   </div>
                 </div>
               </div>
