@@ -15,24 +15,58 @@ env:
       - RUNTIME
 
   - variable: NEXT_PUBLIC_KAKAO_API_KEY
-    secret: projects/test-project/secrets/secretID
+    secret: projects/743734167475/secrets/KAKAO_API_KEY
+    availability:
+      - BUILD
+      - RUNTIME
+
   - variable: NEXT_PUBLIC_GOOGLE_MAP_API_KEY
-    secret: projects/test-project/secrets/secretID
+    secret: projects/743734167475/secrets/GOOGLE_MAP_API_KEY
+    availability:
+      - BUILD
+      - RUNTIME
 
   - variable: NEXT_PUBLIC_FIREBASE_DB
     secret: projects/743734167475/secrets/databaseURL
+    availability:
+      - BUILD
+      - RUNTIME
+
   - variable: NEXT_PUBLIC_FIREBASE_APIKEY
     secret: projects/743734167475/secrets/apiKey
+    availability:
+      - BUILD
+      - RUNTIME
+
   - variable: NEXT_PUBLIC_FIREBASE_AUTHDOMAIN
     secret: projects/743734167475/secrets/authDomain
+    availability:
+      - BUILD
+      - RUNTIME
+
   - variable: NEXT_PUBLIC_FIREBASE_PROJECTID
     secret: projects/743734167475/secrets/projectId
+    availability:
+      - BUILD
+      - RUNTIME
+
   - variable: NEXT_PUBLIC_FIREBASE_MESSAGINGSENDERID
     secret: projects/743734167475/secrets/messagingSenderId
+    availability:
+      - BUILD
+      - RUNTIME
+
   - variable: NEXT_PUBLIC_FIREBASE_APPID
     secret: projects/743734167475/secrets/appId
+    availability:
+      - BUILD
+      - RUNTIME
+
   - variable: NEXT_PUBLIC_FIREBASE_MEASUREMENTID
     secret: projects/743734167475/secrets/measurementId
+    availability:
+      - BUILD
+      - RUNTIME
     #
     # NEXT_PUBLIC_KAKAO_API_KEY: ${{ secrets.NEXT_PUBLIC_KAKAO_API_KEY }}
     # NEXT_PUBLIC_GOOGLE_MAP_API_KEY: ${{ secrets.NEXT_PUBLIC_GOOGLE_MAP_API_KEY }}
