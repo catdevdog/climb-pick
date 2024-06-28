@@ -1,0 +1,42 @@
+# Settings for Cloud Run
+# runConfig:
+#   minInstances: 2
+#   maxInstances: 100
+#   concurrency: 100
+#   cpu: 2
+#   memoryMiB: 1024
+
+# Environment variables and secrets
+env:
+  - variable: NEXT_PUBLIC_KAKAO_API_KEY
+    secret: projects/test-project/secrets/secretID
+  - variable: NEXT_PUBLIC_GOOGLE_MAP_API_KEY
+    secret: projects/test-project/secrets/secretID
+
+  - variable: NEXT_PUBLIC_FIREBASE_DB
+    secret: projects/743734167475/secrets/databaseURL
+  - variable: NEXT_PUBLIC_FIREBASE_APIKEY
+    secret: projects/743734167475/secrets/apiKey
+  - variable: NEXT_PUBLIC_FIREBASE_AUTHDOMAIN
+    secret: projects/743734167475/secrets/authDomain
+  - variable: NEXT_PUBLIC_FIREBASE_PROJECTID
+    secret: projects/743734167475/secrets/projectId
+  - variable: NEXT_PUBLIC_FIREBASE_STORAGEBUCKET
+    secret: projects/743734167475/secrets/storageBucket
+  - variable: NEXT_PUBLIC_FIREBASE_MESSAGINGSENDERID
+    secret: projects/743734167475/secrets/messagingSenderId
+  - variable: NEXT_PUBLIC_FIREBASE_APPID
+    secret: projects/743734167475/secrets/appId
+  - variable: NEXT_PUBLIC_FIREBASE_MEASUREMENTID
+    secret: projects/743734167475/secrets/measurementId
+    #
+    # NEXT_PUBLIC_KAKAO_API_KEY: ${{ secrets.NEXT_PUBLIC_KAKAO_API_KEY }}
+    # NEXT_PUBLIC_GOOGLE_MAP_API_KEY: ${{ secrets.NEXT_PUBLIC_GOOGLE_MAP_API_KEY }}
+    # NEXT_PUBLIC_FIREBASE_DB: ${{ secrets.NEXT_PUBLIC_FIREBASE_DB }}
+    # NEXT_PUBLIC_FIREBASE_APIKEY: ${{ secrets.NEXT_PUBLIC_FIREBASE_APIKEY }}
+    # NEXT_PUBLIC_FIREBASE_AUTHDOMAIN: ${{ secrets.NEXT_PUBLIC_FIREBASE_AUTHDOMAIN }}
+    # NEXT_PUBLIC_FIREBASE_PROJECTID: ${{ secrets.NEXT_PUBLIC_FIREBASE_PROJECTID }}
+    # NEXT_PUBLIC_FIREBASE_STORAGEBUCKET: ${{ secrets.NEXT_PUBLIC_FIREBASE_STORAGEBUCKET }}
+    # NEXT_PUBLIC_FIREBASE_MESSAGINGSENDERID: ${{ secrets.NEXT_PUBLIC_FIREBASE_MESSAGINGSENDERID }}
+    # NEXT_PUBLIC_FIREBASE_APPID: ${{ secrets.NEXT_PUBLIC_FIREBASE_APPID }}
+    # NEXT_PUBLIC_FIREBASE_MEASUREMENTID: ${{ secrets.NEXT_PUBLIC_FIREBASE_MEASUREMENTID }}
