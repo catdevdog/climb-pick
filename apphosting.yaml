@@ -8,6 +8,12 @@
 
 # Environment variables and secrets
 env:
+  - variable: NEXT_PUBLIC_FIREBASE_STORAGEBUCKET
+    secret: projects/743734167475/secrets/storageBucket
+    availability:
+      - BUILD
+      - RUNTIME
+
   - variable: NEXT_PUBLIC_KAKAO_API_KEY
     secret: projects/test-project/secrets/secretID
   - variable: NEXT_PUBLIC_GOOGLE_MAP_API_KEY
@@ -21,8 +27,6 @@ env:
     secret: projects/743734167475/secrets/authDomain
   - variable: NEXT_PUBLIC_FIREBASE_PROJECTID
     secret: projects/743734167475/secrets/projectId
-  - variable: NEXT_PUBLIC_FIREBASE_STORAGEBUCKET
-    secret: projects/743734167475/secrets/storageBucket
   - variable: NEXT_PUBLIC_FIREBASE_MESSAGINGSENDERID
     secret: projects/743734167475/secrets/messagingSenderId
   - variable: NEXT_PUBLIC_FIREBASE_APPID
