@@ -5,7 +5,6 @@ import Link from "next/link";
 import KakaoMap from "./KakaoMap";
 import useStore from "../store/store";
 import Button from "@/components/Button";
-import type { PlacesSearchResultItem } from "@/types/kakao";
 
 export default function Home() {
   const { $place } = useStore();
@@ -48,7 +47,7 @@ export default function Home() {
           </Button>
         )}
         {openList && (
-          <div className="bg-white bg-opacity-80 fixed bottom-16 left-5 p-2 rounded-lg z-10 overflow-y-auto h-2/3">
+          <div className="bg-white bg-opacity-80 fixed bottom-16 left-5 p-2 rounded-lg z-10 overflow-y-auto h-fit">
             {$place.searchResults.map((result, idx) => (
               <div
                 key={idx}
@@ -57,7 +56,7 @@ export default function Home() {
                 <div className="flex items-center">
                   <div className="ml-2">
                     <p className="text-sm font-bold">{result.name}</p>
-                    <p className="text-xs">{result.vicinity}</p>
+                    <p className="text-xs">{result.address}</p>
                     {/* <p className="text-xs">{result.opening_hours?.open_now ? 'open' : 'closed'}</p> */}
                   </div>
                 </div>

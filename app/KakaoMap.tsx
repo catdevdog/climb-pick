@@ -1,35 +1,34 @@
-"use client";
-
 import { useEffect, useState } from "react";
 import { Map, MapMarker, CustomOverlayMap } from "react-kakao-maps-sdk";
 import useCurrentLocation from "@/hooks/useCurrentLocation";
 import useStore from "@/store/store";
 import useFirebase from '@/hooks/useFirebase';
 import useAuth from '@/hooks/useAuth';
+import type { TypePlace } from "@/types/place";
 
 type KakaoMapProps = {
 };
 
-export default function KakaoMap({
-}: KakaoMapProps) {
+export default function KakaoMap({ }: KakaoMapProps) {
 	const { $place } = useStore();
 	const { user } = useAuth();
-	const { dataSet } = useFirebase();
+	const { dataSet, getPlaces, savePlaces } = useFirebase();
 	const initLocation = useCurrentLocation();
 
 	const [isKakaoLoaded, setIsKakaoLoaded] = useState(false);
 	const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
 	const [changedLocation, setChangedLocation] = useState<{ lat: number; lng: number } | null>(null);
 
-	const [searchKeyword, setSearchKeyword] = useState("클라이밍");
-	const [googleResults, setGoogleResults] = useState<google.maps.places.PlaceResult[]>([]);
+	const [searchKeyword] = useState("클라이밍");
+	const [places, setPlaces] = useState<TypePlace[]>([]);
+	const [selectedPlace, setSelectedPlace] = useState<TypePlace>();
 
-	const [selectedPlace, setSelectedPlace] = useState<google.maps.places.PlaceResult>();
-
+	// Kakao 지도 SDK가 로드되었는지 확인
 	useEffect(() => {
 		window.kakao.maps.load(() => setIsKakaoLoaded(true));
 	}, []);
 
+	// 초기 사용자 위치를 설정하고 Firebase에 데이터를 저장
 	useEffect(() => {
 		if (initLocation && user) {
 			setUserLocation(initLocation);
@@ -37,62 +36,71 @@ export default function KakaoMap({
 		}
 	}, [initLocation, user]);
 
+	// 사용자 위치가 설정되면 장소 검색 수행
 	useEffect(() => {
 		if (isKakaoLoaded && userLocation) {
-			placeSearch();
+			searchPlaces(userLocation.lat, userLocation.lng);
 		}
 	}, [isKakaoLoaded, userLocation]);
 
+	// 검색 요청에 따라 장소 검색 수행
 	useEffect(() => {
-		if (selectedPlace) {
-			console.log(selectedPlace);
-		}
-	}, [selectedPlace]);
-
-	useEffect(() => {
-		if ($place.searchRequest) {
-			placeSearch(new kakao.maps.LatLng(changedLocation!.lat, changedLocation!.lng));
+		if ($place.searchRequest && changedLocation) {
+			searchPlaces(changedLocation.lat, changedLocation.lng);
 			$place.setSearchRequest(false);
 		}
-	}, [$place.searchRequest])
+	}, [$place.searchRequest, changedLocation]);
 
-	/**
-	 * @description 장소 검색을 수행하고 결과를 설정합니다.
-	 * @param {kakao.maps.LatLng} [location] - 검색할 위치
-	 */
-	const placeSearch = (location?: kakao.maps.LatLng) => {
-		if (!window.kakao || !window.kakao.maps) return;
+	// 주어진 위치를 기준으로 장소 검색
+	const searchPlaces = async (lat: number, lng: number) => {
+		if (!window.google || !window.google.maps) return;
 
-		const searchOption = {
-			location: new window.kakao.maps.LatLng(userLocation!.lat, userLocation!.lng),
-		};
+		// Firebase에서 장소를 검색
+		const firebasePlaces = await getPlaces(lat, lng, $place.searchDistance / 1000);
 
-		const rqLocation = location || searchOption.location;
+		if (firebasePlaces.length > 0) {
+			setPlaces(firebasePlaces);
+			console.log("Firebase에서 검색 결과를 가져왔습니다.", firebasePlaces);
+			$place.setSearchResults(firebasePlaces);
+		} else {
+			console.log("Firebase에서 검색 결과가 없습니다. Google api로 검색합니다.")
+			// Firebase에 데이터가 없는 경우 Google Places API를 사용
+			const service = new google.maps.places.PlacesService(
+				document.getElementById("search-map") as HTMLDivElement
+			);
 
-		const request = {
-			location: new google.maps.LatLng(rqLocation.getLat(), rqLocation.getLng()),
-			radius: $place.searchDistance,
-			keyword: searchKeyword,
-		};
+			const request = {
+				location: new google.maps.LatLng(lat, lng),
+				radius: $place.searchDistance,
+				keyword: searchKeyword,
+			};
 
-		const service = new google.maps.places.PlacesService(
-			document.getElementById("search-map") as HTMLDivElement
-		);
+			service.nearbySearch(request, (results, status) => {
+				if (status === google.maps.places.PlacesServiceStatus.OK && results) {
+					const typePlaces: TypePlace[] = results.map((result) => ({
+						name: result.name || '',
+						location: {
+							lat: result.geometry?.location?.lat() ?? 0,
+							lng: result.geometry?.location?.lng() ?? 0,
+						},
+						address: result.vicinity || '',
+						types: result.types || [],
+						rating: result.rating || 0,
+						user_ratings_total: result.user_ratings_total || 0,
+						lastUpdated: new Date().toLocaleString("ko-KR")
+					}));
 
-		service.nearbySearch(request, (results, status) => {
-			if (status === google.maps.places.PlacesServiceStatus.OK && results) {
-				setGoogleResults(results);
-				$place.setSearchResults(results);
-			} else {
-				console.error("Error:", status);
-			}
-		});
+					setPlaces(typePlaces);
+					$place.setSearchResults(typePlaces);
+					savePlaces(results);
+				} else {
+					console.error("오류 발생:", status);
+				}
+			});
+		}
 	};
 
-	/**
-	 * @description 지도 중심 변경 시 호출됩니다.
-	 * @param {kakao.maps.Map} map - 변경된 지도 객체
-	 */
+	// 지도 중심이 변경되었을 때의 핸들러
 	const onCenterChanged = (map: kakao.maps.Map) => {
 		$place.setcenterChanged(true);
 		setChangedLocation({
@@ -101,11 +109,8 @@ export default function KakaoMap({
 		});
 	};
 
-	/**
-	 * @description 장소 선택 시 호출됩니다.
-	 * @param {google.maps.places.PlaceResult} place - 선택된 장소
-	 */
-	const onSelectPlace = (place: google.maps.places.PlaceResult) => {
+	// 장소 선택 시의 핸들러
+	const onSelectPlace = (place: TypePlace) => {
 		setSelectedPlace(place);
 	};
 
@@ -119,12 +124,12 @@ export default function KakaoMap({
 					style={{ width: "100%", height: "100%" }}
 					onCenterChanged={onCenterChanged}
 				>
-					{googleResults?.map((result, idx) => (
+					{places.map((place, idx) => (
 						<MapMarker
-							key={idx}
+							key={`${idx}_${place.name}`}
 							position={{
-								lat: result.geometry?.location?.lat()!,
-								lng: result.geometry?.location?.lng()!,
+								lat: place.location.lat,
+								lng: place.location.lng,
 							}}
 							image={{
 								src: "/images/marker_white.png",
@@ -133,22 +138,22 @@ export default function KakaoMap({
 							}}
 						/>
 					))}
-					{googleResults?.map((result, idx) => (
+					{places.map((place, idx) => (
 						<CustomOverlayMap
-							key={result.place_id}
+							key={`${place.name}_${idx}`}
 							position={{
-								lat: result.geometry?.location?.lat()!,
-								lng: result.geometry?.location?.lng()!,
+								lat: place.location.lat,
+								lng: place.location.lng,
 							}}
 							yAnchor={0}
 							xAnchor={0}
 						>
 							<div
-								onClick={() => onSelectPlace(result)}
-								className={`bg-black bg-opacity-100 relative z-10 ${selectedPlace && selectedPlace.place_id !== result.place_id && "bg-opacity-50 -z-10"
+								onClick={() => onSelectPlace(place)}
+								className={`bg-black bg-opacity-100 relative z-10 ${selectedPlace && selectedPlace.name !== place.name && "bg-opacity-50 -z-10"
 									} text-white p-1 px-2 rounded-lg rounded-tl-none`}
 							>
-								<p className="">{result.name}</p>
+								<p className="">{place.name}</p>
 							</div>
 						</CustomOverlayMap>
 					))}

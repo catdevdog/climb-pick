@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import type { PlacesSearchResultItem } from '@/types/kakao';
+import type { TypePlace } from '@/types/place';
 
 interface State {
     $place: {
@@ -10,8 +11,8 @@ interface State {
         searchRequest: boolean;
         setSearchRequest: (searchRequest: boolean) => void;
 
-        searchResults: google.maps.places.PlaceResult[],
-        setSearchResults: (results: google.maps.places.PlaceResult[]) => void;
+        searchResults: TypePlace[],
+        setSearchResults: (results: TypePlace[]) => void;
     }
 }
 
