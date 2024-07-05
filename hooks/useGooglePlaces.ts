@@ -49,6 +49,7 @@ const useGooglePlaces = (): UseGooglePlacesResult => {
         service.nearbySearch(request, (results, status) => {
           if (status === google.maps.places.PlacesServiceStatus.OK && results) {
             const typePlaces: TypePlace[] = results.map((result) => ({
+              place_id: result.place_id || "",
               name: result.name || "",
               location: {
                 lat: result.geometry?.location?.lat() ?? 0,

@@ -37,6 +37,9 @@ const useSearchPlaces = (searchKeyword: string) => {
         setPlaces(firebasePlaces);
         $place.setSearchResults(firebasePlaces);
       } else {
+        console.debug(
+          "저장된 장소가 없습니다. Google Places API를 사용하여 검색합니다."
+        );
         // Google Places API를 사용하여 검색
         const googlePlaces = await searchNearbyPlaces(
           lat,
