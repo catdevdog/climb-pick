@@ -1,51 +1,73 @@
 import { useState, useEffect } from "react";
 
-const useCurrentLocation = () => {
-  const [location, setLocation] = useState<{ lat: number; lng: number }>();
+interface Location {
+  lat: number;
+  lng: number;
+}
+
+interface UseCurrentLocationResult {
+  location: Location | null;
+  error: string | null;
+}
+
+/**
+ * 사용자의 현재 위치를 가져오는 커스텀 훅
+ * @returns {UseCurrentLocationResult} 위치 정보와 에러 상태
+ */
+const useCurrentLocation = (): UseCurrentLocationResult => {
+  const [location, setLocation] = useState<Location | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const userAgent = navigator.userAgent.toLowerCase();
-    const isMobileDevice =
-      /mobile|android|iphone|ipad|ipod|blackberry|windows phone/i.test(
-        userAgent
-      );
-    // isMobileDevice && navigator.geolocation
-    if (isMobileDevice && navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
+    const getUserLocation = async () => {
+      const isMobileDevice =
+        /mobile|android|iphone|ipad|ipod|blackberry|windows phone/i.test(
+          navigator.userAgent.toLowerCase()
+        );
+
+      try {
+        if (isMobileDevice && "geolocation" in navigator) {
+          const position = await new Promise<GeolocationPosition>(
+            (resolve, reject) => {
+              navigator.geolocation.getCurrentPosition(resolve, reject, {
+                enableHighAccuracy: true,
+                timeout: 5000,
+                maximumAge: 0,
+              });
+            }
+          );
+
           setLocation({
             lat: position.coords.latitude,
             lng: position.coords.longitude,
           });
-        },
-        () => { },
-        {
-          enableHighAccuracy: true,
-          timeout: 5000, // 타임아웃 시간 설정
-          maximumAge: 0, // 캐시된 위치 사용 안 함
-        }
-      );
-    } else {
-      const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAP_API_KEY;
-      const url = `https://www.googleapis.com/geolocation/v1/geolocate?key=${apiKey}`;
+        } else {
+          const response = await fetch(
+            `https://www.googleapis.com/geolocation/v1/geolocate?key=${process.env.NEXT_PUBLIC_GOOGLE_MAP_API_KEY}`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+            }
+          );
 
-      fetch(url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({}),
-      })
-        .then((response) => response.json())
-        .then((data) => {
+          if (!response.ok) {
+            throw new Error("Failed to fetch location from Google API");
+          }
+
+          const data = await response.json();
           setLocation({ lat: data.location.lat, lng: data.location.lng });
-        })
-        .catch((error) => {
-          console.error("Error:", error);
-        });
-    }
+        }
+      } catch (err) {
+        setError(
+          err instanceof Error ? err.message : "An unknown error occurred"
+        );
+      }
+    };
+
+    getUserLocation();
   }, []);
-  return location;
+
+  return { location, error };
 };
 
 export default useCurrentLocation;

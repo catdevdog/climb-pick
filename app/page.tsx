@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import Link from "next/link";
+import React, { useEffect, useState, useCallback } from "react";
 import KakaoMap from "./KakaoMap";
 import useStore from "../store/store";
 import Button from "@/components/Button";
+import SearchResultsList from "@/components/SearchResultsList";
 
 export default function Home() {
   const { $place } = useStore();
@@ -16,55 +16,51 @@ export default function Home() {
     }
   }, [$place.searchResults]);
 
+  /**
+   * 검색 결과 목록 토글 핸들러
+   */
+  const toggleList = useCallback(() => {
+    setOpenList((prev) => !prev);
+  }, []);
+
+  /**
+   * 재검색 요청 핸들러
+   */
+  const handleReSearch = useCallback(() => {
+    $place.setSearchRequest(true);
+  }, [$place]);
+
   return (
-    <>
-      <div className="w-full h-screen">
-        {/* <Link href={'/data'}>db test</Link> */}
-        <div id="search-map" className="display-none"></div>
-        <KakaoMap
-        ></KakaoMap>
-        {$place.centerChanged && (
-          <Button
-            color="info"
-            size="medium"
-            className="fixed z-10 left-1/2 transform -translate-x-1/2 bottom-5"
-            onClick={() => $place.setSearchRequest(true)}
-          >
-            이 지역에서 재검색
-          </Button>
-        )}
-        {$place.searchResults.length > 0 && (
-          <Button
-            color="info"
-            size="medium"
-            icon
-            className="fixed z-10 bottom-5 left-5 rounded-full"
-            onClick={() => setOpenList(!openList)}
-          >
-            <i className="material-symbols-outlined">
-              {openList ? "close" : "menu"}
-            </i>
-          </Button>
-        )}
-        {openList && (
-          <div className="bg-white bg-opacity-80 fixed bottom-16 left-5 p-2 rounded-lg z-10 overflow-y-auto h-fit">
-            {$place.searchResults.map((result, idx) => (
-              <div
-                key={idx}
-                className="flex justify-between items-center border-gray-200 py-1"
-              >
-                <div className="flex items-center">
-                  <div className="ml-2">
-                    <p className="text-sm font-bold">{result.name}</p>
-                    <p className="text-xs">{result.address}</p>
-                    {/* <p className="text-xs">{result.opening_hours?.open_now ? 'open' : 'closed'}</p> */}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-    </>
+    <div className="w-full h-screen relative">
+      <div id="search-map" className="hidden"></div>
+      <KakaoMap />
+
+      {$place.centerChanged && (
+        <Button
+          color="info"
+          size="medium"
+          className="fixed z-10 left-1/2 transform -translate-x-1/2 bottom-5"
+          onClick={handleReSearch}
+        >
+          이 지역에서 재검색
+        </Button>
+      )}
+
+      {$place.searchResults.length > 0 && (
+        <Button
+          color="info"
+          size="medium"
+          icon
+          className="fixed z-10 bottom-5 left-5 rounded-full"
+          onClick={toggleList}
+        >
+          <i className="material-symbols-outlined">
+            {openList ? "close" : "menu"}
+          </i>
+        </Button>
+      )}
+
+      {openList && <SearchResultsList results={$place.searchResults} />}
+    </div>
   );
 }
