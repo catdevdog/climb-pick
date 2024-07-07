@@ -1,6 +1,7 @@
 import { ref, set, get, query, orderByChild, startAt, endAt } from "firebase/database";
 import { database } from "@/firebase/firebasedb";
 import { TypePlace } from "@/types/place";
+import { time } from "console";
 
 export function useFirebase() {
   // 사용자 위치 데이터를 Firebase에 저장
@@ -12,7 +13,8 @@ export function useFirebase() {
       let visitCount = snapshot.exists() ? snapshot.val().visit_count : 0;
 
       await set(locationRef, {
-        timestamp: new Date().toLocaleString("ko-KR"),
+        timestamp_kr: new Date().toLocaleString("ko-KR"),
+        timestamp: new Date().getTime(),
         visit_count: visitCount + 1,
         coord: `${lat},${lng}`
       });
