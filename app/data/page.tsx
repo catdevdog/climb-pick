@@ -1,13 +1,13 @@
-'use client'
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import useAuth from '@/hooks/useAuth';
-import { useFirebase } from '@/hooks/useFirebase';
-import { TypePlace } from '@/types/place';
+import React, { useState, useEffect } from "react";
+import useAuth from "@/hooks/useAuth";
+import { useFirebase } from "@/hooks/useFirebase";
+import { TypePlace } from "@/types/place";
 import { ref, onValue, remove } from "firebase/database";
 import { database } from "@/firebase/firebasedb";
-import Button from '@/components/Button';
-import { formatTimestamp } from '@/utils';
+import Button from "@/components/Button";
+import { formatTimestamp } from "@/utils";
 
 interface ConnectItem {
   timestamp: string;
@@ -17,16 +17,19 @@ interface ConnectItem {
 }
 
 type DataType = {
-  'connect-id': { [key: string]: ConnectItem };
+  "connect-id": { [key: string]: ConnectItem };
   places: { [key: string]: TypePlace };
 };
 
 export default function AdminPage() {
   const { user, loading, error } = useAuth();
-  const { dataSet, getPlaces, savePlaces } = useFirebase();
-  const [data, setData] = useState<DataType>({ 'connect-id': {}, places: {} });
+  const { saveUser, getPlaces, savePlaces } = useFirebase();
+  const [data, setData] = useState<DataType>({ "connect-id": {}, places: {} });
   const [editItem, setEditItem] = useState<any | null>(null);
-  const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'ascending' | 'descending' } | null>(null);
+  const [sortConfig, setSortConfig] = useState<{
+    key: string;
+    direction: "ascending" | "descending";
+  } | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [selectedColumns, setSelectedColumns] = useState<any>({});
@@ -36,13 +39,13 @@ export default function AdminPage() {
       const dbRef = ref(database);
       const unsubscribe = onValue(dbRef, (snapshot) => {
         const value = snapshot.val();
-        setData(value || { 'connect-id': {}, places: {} });
+        setData(value || { "connect-id": {}, places: {} });
 
         const newSelectedColumns: { [key: string]: boolean } = {};
-        ['connect-id', 'places'].forEach(type => {
+        ["connect-id", "places"].forEach((type) => {
           const firstItem = Object.values(value?.[type] || {})[0];
           if (firstItem) {
-            Object.keys(firstItem).forEach(key => {
+            Object.keys(firstItem).forEach((key) => {
               newSelectedColumns[`${type}-${key}`] = true;
             });
           }
@@ -54,43 +57,27 @@ export default function AdminPage() {
     }
   }, [user]);
 
-  const handleEdit = (type: 'connect-id' | 'places', id: string, item: ConnectItem | TypePlace) => {
-    setEditItem({ type, id, ...item });
-  };
-
-  const handleSave = async () => {
-    if (editItem) {
-      const { type, id, ...rest } = editItem;
-      if (type === 'connect-id') {
-        await dataSet(id, parseFloat(rest.coord.split(',')[0]), parseFloat(rest.coord.split(',')[1]));
-      } else {
-        await savePlaces([rest as google.maps.places.PlaceResult]);
-      }
-      setEditItem(null);
-    }
-  };
-
-  const handleDelete = (type: 'connect-id' | 'places', id: string) => {
-    remove(ref(database, `${type}/${id}`));
-  };
-
   const requestSort = (key: string) => {
-    let direction: 'ascending' | 'descending' = 'ascending';
-    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'ascending') {
-      direction = 'descending';
+    let direction: "ascending" | "descending" = "ascending";
+    if (
+      sortConfig &&
+      sortConfig.key === key &&
+      sortConfig.direction === "ascending"
+    ) {
+      direction = "descending";
     }
     setSortConfig({ key, direction });
   };
 
-  const sortedItems = (type: 'connect-id' | 'places') => {
+  const sortedItems = (type: "connect-id" | "places") => {
     const itemsArray = Object.entries(data[type]);
     if (sortConfig !== null) {
       itemsArray.sort((a, b) => {
         if (a[1][sortConfig.key] < b[1][sortConfig.key]) {
-          return sortConfig.direction === 'ascending' ? -1 : 1;
+          return sortConfig.direction === "ascending" ? -1 : 1;
         }
         if (a[1][sortConfig.key] > b[1][sortConfig.key]) {
-          return sortConfig.direction === 'ascending' ? 1 : -1;
+          return sortConfig.direction === "ascending" ? 1 : -1;
         }
         return 0;
       });
@@ -114,25 +101,29 @@ export default function AdminPage() {
     return (
       <div className="flex justify-center items-center space-x-2 mt-4">
         <Button
-          size='small'
-          color='black'
-          onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+          size="small"
+          color="black"
+          onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
         >
           Previous
         </Button>
-        {pageNumbers.map(number => (
+        {pageNumbers.map((number) => (
           <span
             key={number}
             onClick={() => setCurrentPage(number)}
-            className={`px-3 py-1 rounded-md ${currentPage === number ? 'bg-gray-300' : ''}`}
+            className={`px-3 py-1 rounded-md ${
+              currentPage === number ? "bg-gray-300" : ""
+            }`}
           >
             {number}
           </span>
         ))}
         <Button
-          size='small'
-          color='black'
-          onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+          size="small"
+          color="black"
+          onClick={() =>
+            setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+          }
         >
           Next
         </Button>
@@ -140,12 +131,14 @@ export default function AdminPage() {
     );
   };
 
-  const renderTable = (type: 'connect-id' | 'places') => {
+  const renderTable = (type: "connect-id" | "places") => {
     const items = sortedItems(type);
     const paginatedData = paginatedItems(items);
 
     const allKeys = Object.keys(Object.values(data[type])[0] || {});
-    const visibleKeys = allKeys.filter(key => selectedColumns[`${type}-${key}`]);
+    const visibleKeys = allKeys.filter(
+      (key) => selectedColumns[`${type}-${key}`]
+    );
 
     return (
       <div>
@@ -156,7 +149,10 @@ export default function AdminPage() {
                 type="checkbox"
                 checked={selectedColumns[`${type}-${key}`] || false}
                 onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
-                  setSelectedColumns((prev: any) => ({ ...prev, [`${type}-${key}`]: event.target.checked }))
+                  setSelectedColumns((prev: any) => ({
+                    ...prev,
+                    [`${type}-${key}`]: event.target.checked,
+                  }))
                 }
               />
               <span className="ml-2">{key}</span>
@@ -173,7 +169,8 @@ export default function AdminPage() {
                   onClick={() => requestSort(key)}
                 >
                   {key}
-                  {sortConfig?.key === key && (sortConfig.direction === 'ascending' ? ' ▲' : ' ▼')}
+                  {sortConfig?.key === key &&
+                    (sortConfig.direction === "ascending" ? " ▲" : " ▼")}
                 </th>
               ))}
               <th className="px-2 py-1">Actions</th>
@@ -184,11 +181,11 @@ export default function AdminPage() {
               <tr key={id} className="border-t">
                 {visibleKeys.map((key: string) => (
                   <td key={key} className="px-2 py-1 whitespace-wrap text-sm">
-                    {key === 'timestamp'
+                    {key === "timestamp"
                       ? formatTimestamp(new Date(item[key]))
-                      : typeof item[key] === 'object'
-                        ? JSON.stringify(item[key])
-                        : String(item[key])}
+                      : typeof item[key] === "object"
+                      ? JSON.stringify(item[key])
+                      : String(item[key])}
                   </td>
                 ))}
                 <td className="px-2 py-1 whitespace-nowrap">
@@ -216,7 +213,7 @@ export default function AdminPage() {
     <div className="container mx-auto p-1">
       <h1 className="text-2xl font-bold mb-4">Admin Dashboard</h1>
 
-      {(['connect-id', 'places'] as const).map((type) => (
+      {(["connect-id", "places"] as const).map((type) => (
         <div key={type} className="mb-8">
           <h2 className="text-xl font-semibold mb-2 capitalize">{type}</h2>
           {renderTable(type)}
