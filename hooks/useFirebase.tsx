@@ -9,6 +9,7 @@ import {
 } from "firebase/database";
 import { database } from "@/firebase/firebasedb";
 import { TypePlace } from "@/types/place";
+import { time } from "console";
 
 interface UseFirebaseResult {
   dataSet: (uid: string, lat: number, lng: number) => Promise<void>;
@@ -39,7 +40,8 @@ export function useFirebase(): UseFirebaseResult {
       const visitCount = snapshot.exists() ? snapshot.val().visit_count : 0;
 
       await set(locationRef, {
-        timestamp: new Date().toLocaleString("ko-KR"),
+        timestamp_kr: new Date().toLocaleString("ko-KR"),
+        timestamp: new Date().getTime(),
         visit_count: visitCount + 1,
         coord: `${lat},${lng}`,
       });
