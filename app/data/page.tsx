@@ -142,7 +142,7 @@ export default function AdminPage() {
 
     return (
       <div>
-        <div className="mb-4">
+        <div className="mb-4 px-4">
           {allKeys.map((key: string) => (
             <label key={key} className="inline-flex items-center mr-4">
               <input
@@ -159,7 +159,7 @@ export default function AdminPage() {
             </label>
           ))}
         </div>
-        <table className="min-w-full bg-white">
+        <table className="w-screen block overflow-auto bg-white">
           <thead>
             <tr>
               {visibleKeys.map((key: string) => (
@@ -210,7 +210,7 @@ export default function AdminPage() {
   if (!user) return <div>Please sign in to access the admin page.</div>;
 
   return (
-    <div className="container mx-auto p-1">
+    <div className="container mx-auto">
       <h1 className="text-2xl font-bold mb-4">Admin Dashboard</h1>
 
       {(["connect-id", "places"] as const).map((type) => (
