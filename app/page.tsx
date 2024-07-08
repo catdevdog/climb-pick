@@ -5,10 +5,12 @@ import KakaoMap from "./KakaoMap";
 import useStore from "../store/store";
 import Button from "@/components/Button";
 import SearchResultsList from "@/components/SearchResultsList";
+import { useRouter } from "next/navigation";
 
 export default function Home() {
   const { $place } = useStore();
   const [openList, setOpenList] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     if ($place.searchResults.length > 0) {
@@ -59,6 +61,17 @@ export default function Home() {
           </i>
         </Button>
       )}
+
+      <Button
+        color="black"
+        size="medium"
+        className="fixed z-10 right-5 bottom-5"
+        onClick={() => {
+          router.push("/data");
+        }}
+      >
+        admin
+      </Button>
 
       {openList && <SearchResultsList results={$place.searchResults} />}
     </div>

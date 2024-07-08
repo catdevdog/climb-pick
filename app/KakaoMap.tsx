@@ -33,6 +33,7 @@ const useSearchPlaces = (searchKeyword: string) => {
         $place.searchDistance / 1000
       );
 
+      // TODO: Firebase에 데이터가 1건이라도 있으면 실제 API 데이터와 달라도 Firebase 데이터를 사용하는 현상 수정.
       if (firebasePlaces.length > 0) {
         setPlaces(firebasePlaces);
         $place.setSearchResults(firebasePlaces);
@@ -65,7 +66,7 @@ export default function KakaoMap({
 }: KakaoMapProps) {
   const { $place } = useStore();
   const { user } = useAuth();
-  const { dataSet } = useFirebase();
+  const { saveUser } = useFirebase();
   const { location: initLocation, error: locationError } = useCurrentLocation();
 
   const [isKakaoLoaded, setIsKakaoLoaded] = useState(false);
@@ -90,7 +91,7 @@ export default function KakaoMap({
   useEffect(() => {
     if (initLocation && user) {
       setUserLocation(initLocation);
-      dataSet(user.uid, initLocation.lat, initLocation.lng);
+      saveUser(user.uid, initLocation.lat, initLocation.lng);
     }
   }, [initLocation, user]);
 

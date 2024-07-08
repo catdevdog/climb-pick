@@ -9,10 +9,9 @@ import {
 } from "firebase/database";
 import { database } from "@/firebase/firebasedb";
 import { TypePlace } from "@/types/place";
-import { time } from "console";
 
 interface UseFirebaseResult {
-  dataSet: (uid: string, lat: number, lng: number) => Promise<void>;
+  saveUser: (uid: string, lat: number, lng: number) => Promise<void>;
   getPlaces: (lat: number, lng: number, radius: number) => Promise<TypePlace[]>;
   savePlaces: (places: TypePlace[]) => Promise<void>;
 }
@@ -28,7 +27,7 @@ export function useFirebase(): UseFirebaseResult {
    * @param {number} lat - 위도
    * @param {number} lng - 경도
    */
-  const dataSet = async (
+  const saveUser = async (
     uid: string,
     lat: number,
     lng: number
@@ -45,8 +44,6 @@ export function useFirebase(): UseFirebaseResult {
         visit_count: visitCount + 1,
         coord: `${lat},${lng}`,
       });
-
-      console.log(uid, visitCount + 1);
     } catch (error) {
       console.error("Firebase에 연결 데이터를 전송하는 동안 오류 발생:", error);
       throw error;
@@ -70,10 +67,6 @@ export function useFirebase(): UseFirebaseResult {
     try {
       // const latRange = radius / 111.32; // 위도 범위 계산 (1도 = 약 111.32km)
       // const lngRange = radius / (111.32 * Math.cos((lat * Math.PI) / 180)); // 경도 범위 계산
-
-      // 위도와 경도를 결합한 범위 생성
-      // const startKey = `${lat - radius}_${lng - radius}`;
-      // const endKey = `${lat + radius}_${lng + radius}`;
 
       // 위도와 경도를 결합한 복합 키의 범위 계산
       const latLngRange = getLatLngRange(lat, lng, radius);
@@ -187,7 +180,7 @@ export function useFirebase(): UseFirebaseResult {
   };
 
   return {
-    dataSet,
+    saveUser,
     getPlaces,
     savePlaces,
   };
