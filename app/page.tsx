@@ -14,7 +14,7 @@ export default function Home() {
 
   useEffect(() => {
     if ($place.searchResults.length > 0) {
-      setOpenList(true);
+      // setOpenList(true);
     }
   }, [$place.searchResults]);
 

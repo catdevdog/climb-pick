@@ -1,11 +1,12 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { Map, MapMarker, CustomOverlayMap } from "react-kakao-maps-sdk";
+import { Map, MapMarker, CustomOverlayMap, Circle } from "react-kakao-maps-sdk";
 import useCurrentLocation from "@/hooks/useCurrentLocation";
 import useStore from "@/store/store";
 import useFirebase from "@/hooks/useFirebase";
 import useAuth from "@/hooks/useAuth";
 import { TypePlace } from "@/types/place";
 import useGooglePlaces from "@/hooks/useGooglePlaces";
+import { set } from "firebase/database";
 
 // 카카오맵 컴포넌트 props 타입 정의
 type KakaoMapProps = {
@@ -64,10 +65,10 @@ const useSearchPlaces = (searchKeyword: string) => {
 export default function KakaoMap({
   searchKeyword = "클라이밍",
 }: KakaoMapProps) {
+  const { location: initLocation, error: locationError } = useCurrentLocation();
+  const { saveUser } = useFirebase();
   const { $place } = useStore();
   const { user } = useAuth();
-  const { saveUser } = useFirebase();
-  const { location: initLocation, error: locationError } = useCurrentLocation();
 
   const [isKakaoLoaded, setIsKakaoLoaded] = useState(false);
   const [userLocation, setUserLocation] = useState<{
@@ -91,6 +92,7 @@ export default function KakaoMap({
   useEffect(() => {
     if (initLocation && user) {
       setUserLocation(initLocation);
+      setChangedLocation(initLocation);
       saveUser(user.uid, initLocation.lat, initLocation.lng);
     }
   }, [initLocation, user]);
@@ -146,6 +148,21 @@ export default function KakaoMap({
       style={{ width: "100%", height: "100%" }}
       onCenterChanged={onCenterChanged}
     >
+      {changedLocation && (
+        <Circle
+          center={{
+            lat: changedLocation.lat,
+            lng: changedLocation.lng,
+          }}
+          radius={$place.searchDistance}
+          strokeWeight={2} // 선의 두께입니다
+          strokeColor={"#ff0000"} // 선의 색깔입니다
+          strokeOpacity={0.3} // 선의 불투명도 입니다 1에서 0 사이의 값이며 0에 가까울수록 투명합니다
+          strokeStyle={"solid"} // 선의 스타일 입니다
+          fillColor={"#000000"} // 채우기 색깔입니다
+          fillOpacity={0} // 채우기 불투명도 입니다
+        />
+      )}
       {places.map((place, idx) => (
         <React.Fragment key={`${place.name}_${idx}`}>
           <MapMarker
@@ -155,11 +172,11 @@ export default function KakaoMap({
             }}
             image={{
               src: "/images/marker_white.png",
-              size: { width: 25, height: 25 },
-              options: { offset: { x: 12.5, y: 12.5 } },
+              size: { width: 20, height: 20 },
+              options: { offset: { x: 10, y: 10 } },
             }}
           />
-          <CustomOverlayMap
+          {/* <CustomOverlayMap
             position={{
               lat: place.location.lat,
               lng: place.location.lng,
@@ -177,7 +194,7 @@ export default function KakaoMap({
             >
               <p>{place.name}</p>
             </div>
-          </CustomOverlayMap>
+          </CustomOverlayMap> */}
         </React.Fragment>
       ))}
     </Map>

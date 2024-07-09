@@ -51,6 +51,7 @@ const useGooglePlaces = (): UseGooglePlacesResult => {
             const typePlaces: TypePlace[] = results.map((result) => ({
               place_id: result.place_id || "",
               name: result.name || "",
+              lat_lng: `${result.geometry?.location?.lat()}_${result.geometry?.location?.lng()}`,
               location: {
                 lat: result.geometry?.location?.lat() ?? 0,
                 lng: result.geometry?.location?.lng() ?? 0,

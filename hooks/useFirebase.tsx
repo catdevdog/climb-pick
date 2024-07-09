@@ -65,33 +65,13 @@ export function useFirebase(): UseFirebaseResult {
     const placesRef = ref(database, "places");
 
     try {
-      // const latRange = radius / 111.32; // 위도 범위 계산 (1도 = 약 111.32km)
-      // const lngRange = radius / (111.32 * Math.cos((lat * Math.PI) / 180)); // 경도 범위 계산
-
-      // 위도와 경도를 결합한 복합 키의 범위 계산
-      const latLngRange = getLatLngRange(lat, lng, radius);
-
-      const nearbyPlacesQuery = query(
-        placesRef,
-        orderByChild("lat_lng"),
-        startAt(latLngRange.start),
-        endAt(latLngRange.end)
-      );
-
-      const snapshot = await get(nearbyPlacesQuery);
-
+      const snapshot = await get(placesRef);
       if (snapshot.exists()) {
         const places: TypePlace[] = [];
         snapshot.forEach((childSnapshot) => {
           const place: TypePlace = childSnapshot.val();
-          if (
-            calculateDistance(
-              lat,
-              lng,
-              place.location.lat,
-              place.location.lng
-            ) <= radius
-          ) {
+          const [placeLat, placeLng] = place.lat_lng.split("_").map(Number);
+          if (calculateDistance(lat, lng, placeLat, placeLng) <= radius) {
             places.push(place);
           }
         });
@@ -156,27 +136,18 @@ export function useFirebase(): UseFirebaseResult {
     lat2: number,
     lon2: number
   ): number => {
-    const R = 6371; // 지구 반경 (km)
-    const dLat = ((lat2 - lat1) * Math.PI) / 180;
-    const dLon = ((lon2 - lon1) * Math.PI) / 180;
+    const R = 6371e3; // 지구의 반지름 (미터 단위)
+    const phi1 = lat1 * (Math.PI / 180);
+    const phi2 = lat2 * (Math.PI / 180);
+    const deltaPhi = (lat2 - lat1) * (Math.PI / 180);
+    const deltaLambda = (lon2 - lon1) * (Math.PI / 180);
+
     const a =
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos((lat1 * Math.PI) / 180) *
-        Math.cos((lat2 * Math.PI) / 180) *
-        Math.sin(dLon / 2) *
-        Math.sin(dLon / 2);
+      Math.sin(deltaPhi / 2) ** 2 +
+      Math.cos(phi1) * Math.cos(phi2) * Math.sin(deltaLambda / 2) ** 2;
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return R * c;
-  };
 
-  const getLatLngRange = (lat: number, lng: number, radius: number) => {
-    const latRange = radius / 111.32;
-    const lngRange = radius / (111.32 * Math.cos((lat * Math.PI) / 180));
-
-    return {
-      start: `${lat - latRange}_${lng - lngRange}`,
-      end: `${lat + latRange}_${lng + lngRange}`,
-    };
+    return (R * c) / 1000; // km 단위 거리
   };
 
   return {

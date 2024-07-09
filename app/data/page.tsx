@@ -23,9 +23,7 @@ type DataType = {
 
 export default function AdminPage() {
   const { user, loading, error } = useAuth();
-  const { saveUser, getPlaces, savePlaces } = useFirebase();
   const [data, setData] = useState<DataType>({ "connect-id": {}, places: {} });
-  const [editItem, setEditItem] = useState<any | null>(null);
   const [sortConfig, setSortConfig] = useState<{
     key: string;
     direction: "ascending" | "descending";
@@ -210,7 +208,7 @@ export default function AdminPage() {
   if (!user) return <div>Please sign in to access the admin page.</div>;
 
   return (
-    <div className="container mx-auto">
+    <div className="container">
       <h1 className="text-2xl font-bold mb-4">Admin Dashboard</h1>
 
       {(["connect-id", "places"] as const).map((type) => (
