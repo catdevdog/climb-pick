@@ -171,9 +171,9 @@ export default function KakaoMap({
               lng: place.location.lng,
             }}
             image={{
-              src: "/images/marker_white.png",
-              size: { width: 20, height: 20 },
-              options: { offset: { x: 10, y: 10 } },
+              src: "/images/data.svg",
+              size: { width: 25, height: 25 },
+              options: { offset: { x: 12.5, y: 25 } },
             }}
           />
           {/* <CustomOverlayMap

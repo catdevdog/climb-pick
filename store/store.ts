@@ -18,7 +18,7 @@ interface State {
 
 const useStore = create<State>((set) => ({
   $place: {
-    searchDistance: 2000,
+    searchDistance: 25000,
 
     centerChanged: false,
     setcenterChanged: (centerChanged) =>
