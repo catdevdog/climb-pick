@@ -2,6 +2,7 @@ import {
   ref,
   set,
   get,
+  update,
   query,
   orderByChild,
   startAt,
@@ -9,6 +10,7 @@ import {
 } from "firebase/database";
 import { database } from "@/firebase/firebasedb";
 import { TypePlace } from "@/types/place";
+import { calculateDistance } from "@/utils";
 
 interface UseFirebaseResult {
   saveUser: (uid: string, lat: number, lng: number) => Promise<void>;
@@ -122,33 +124,37 @@ export function useFirebase(): UseFirebaseResult {
     }
   };
 
-  /**
-   * Haversine 공식을 사용하여 두 지점 간의 거리 계산 (km 단위)
-   * @param {number} lat1 - 첫 번째 위치의 위도
-   * @param {number} lon1 - 첫 번째 위치의 경도
-   * @param {number} lat2 - 두 번째 위치의 위도
-   * @param {number} lon2 - 두 번째 위치의 경도
-   * @returns {number} 두 지점 간의 거리 (km)
-   */
-  const calculateDistance = (
-    lat1: number,
-    lon1: number,
-    lat2: number,
-    lon2: number
-  ): number => {
-    const R = 6371e3; // 지구의 반지름 (미터 단위)
-    const phi1 = lat1 * (Math.PI / 180);
-    const phi2 = lat2 * (Math.PI / 180);
-    const deltaPhi = (lat2 - lat1) * (Math.PI / 180);
-    const deltaLambda = (lon2 - lon1) * (Math.PI / 180);
+  async function addAllData(key: string, value: any): Promise<void> {
+    const rootRef = ref(database);
 
-    const a =
-      Math.sin(deltaPhi / 2) ** 2 +
-      Math.cos(phi1) * Math.cos(phi2) * Math.sin(deltaLambda / 2) ** 2;
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    try {
+      const snapshot = await get(rootRef);
 
-    return (R * c) / 1000; // km 단위 거리
-  };
+      if (snapshot.exists()) {
+        const updates: { [key: string]: any } = {};
+        snapshot.forEach((childSnapshot) => {
+          const childKey = childSnapshot.key!;
+          const childData = childSnapshot.val();
+
+          if (typeof childData === "object" && childData !== null) {
+            // 객체에 새로운 키-값 쌍을 추가합니다.
+            const updatedData = { ...childData, [key]: value };
+            updates[childKey] = updatedData;
+          } else {
+            // 객체가 아닌 데이터는 건너뜁니다.
+            console.warn(`객체만 추가할 수 있습니다.`);
+          }
+        });
+
+        await update(rootRef, updates);
+        console.log("모든 데이터에 새로운 키-값 쌍이 추가되었습니다.");
+      } else {
+        console.log("No data available");
+      }
+    } catch (error) {
+      console.error("Error updating values:", error);
+    }
+  }
 
   return {
     saveUser,
