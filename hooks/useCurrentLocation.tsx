@@ -27,6 +27,7 @@ const useCurrentLocation = (): UseCurrentLocationResult => {
 
       try {
         if (isMobileDevice && "geolocation" in navigator) {
+          console.log("Mobile device detected");
           const position = await new Promise<GeolocationPosition>(
             (resolve, reject) => {
               navigator.geolocation.getCurrentPosition(resolve, reject, {
@@ -42,6 +43,7 @@ const useCurrentLocation = (): UseCurrentLocationResult => {
             lng: position.coords.longitude,
           });
         } else {
+          console.log("Non-mobile device or geolocation not supported");
           const response = await fetch(
             `https://www.googleapis.com/geolocation/v1/geolocate?key=${process.env.NEXT_PUBLIC_GOOGLE_MAP_API_KEY}`,
             {

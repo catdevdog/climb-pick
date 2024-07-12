@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, use } from "react";
 import { Map, MapMarker, CustomOverlayMap, Circle } from "react-kakao-maps-sdk";
 import useCurrentLocation from "@/hooks/useCurrentLocation";
 import useStore from "@/store/store";
@@ -70,58 +70,63 @@ export default function KakaoMap({
   const { $place } = useStore();
   const { user } = useAuth();
 
-  const [isKakaoLoaded, setIsKakaoLoaded] = useState(false);
-  const [userLocation, setUserLocation] = useState<{
-    lat: number;
-    lng: number;
-  } | null>(null);
-  const [changedLocation, setChangedLocation] = useState<{
-    lat: number;
-    lng: number;
-  } | null>(null);
-  const [selectedPlace, setSelectedPlace] = useState<TypePlace>();
-
   const { places, searchPlaces } = useSearchPlaces(searchKeyword);
+
+  const [selectedPlace, setSelectedPlace] = useState<TypePlace>();
+  const [isKakaoLoaded, setIsKakaoLoaded] = useState(false);
+
+  // 사용자 현재 위치
+  const [useCoord, setUserCoord] = useState<{
+    lat: number;
+    lng: number;
+  } | null>(null);
+
+  // 지도에 표시할 마커 위치
+  const [displayCoord, setDisplayCoord] = useState<{
+    lat: number;
+    lng: number;
+  } | null>(null);
 
   // Kakao 지도 SDK 로드 확인
   useEffect(() => {
     window.kakao.maps.load(() => setIsKakaoLoaded(true));
   }, []);
 
-  // 초기 사용자 위치 설정 및 Firebase 데이터 저장
+  // 첫 진입시 사용자 위치 설정, 로그인 정보 저장
   useEffect(() => {
     if (initLocation && user) {
-      setUserLocation(initLocation);
-      setChangedLocation(initLocation);
+      console.log("initLocation", initLocation);
+      setUserCoord(initLocation);
+      setDisplayCoord(initLocation);
       saveUser(user.uid, initLocation.lat, initLocation.lng);
     }
   }, [initLocation, user]);
 
   // 사용자 위치 설정 시 장소 검색
   useEffect(() => {
-    if (isKakaoLoaded && userLocation) {
-      searchPlaces(userLocation.lat, userLocation.lng);
+    if (isKakaoLoaded && useCoord) {
+      searchPlaces($place.refCoords.lat, $place.refCoords.lng);
     }
-  }, [isKakaoLoaded, userLocation]);
+  }, [isKakaoLoaded, useCoord]);
 
   // 검색 요청에 따른 장소 검색
   useEffect(() => {
-    if ($place.searchRequest && changedLocation) {
-      searchPlaces(changedLocation.lat, changedLocation.lng);
-      $place.setSearchRequest(false);
+    if ($place.searchRequest && displayCoord) {
+      // searchPlaces($place.refCoords.lat, $place.refCoords.lng);
+      // $place.setSearchRequest(false);
     }
-  }, [$place.searchRequest, changedLocation]);
+  }, [$place.searchRequest, displayCoord]);
 
   /**
    * 지도 중심 변경 핸들러
    * @param map 카카오 맵 객체
    */
   const onCenterChanged = (map: kakao.maps.Map) => {
-    $place.setcenterChanged(true);
-    setChangedLocation({
-      lat: map.getCenter().getLat(),
-      lng: map.getCenter().getLng(),
-    });
+    // $place.setcenterChanged(true);
+    // setDisplayCoord({
+    //   lat: map.getCenter().getLat(),
+    //   lng: map.getCenter().getLng(),
+    // });
   };
 
   /**
@@ -132,51 +137,77 @@ export default function KakaoMap({
     setSelectedPlace(place);
   };
 
+  /**
+   * 마커 드래그 종료 핸들러
+   * @param marker kakao.maps.Marker 객체
+   */
+  const onMarkerDragEnd = (marker: kakao.maps.Marker) => {
+    const position = marker.getPosition();
+    setDisplayCoord({
+      lat: position.getLat(),
+      lng: position.getLng(),
+    });
+    // $place.setcenterChanged(true);
+  };
+
   if (locationError) {
     return <div>위치를 가져오는데 실패했습니다: {locationError}</div>;
   }
 
-  if (!userLocation) {
+  if (!useCoord) {
     return <div>위치를 가져오는 중...</div>;
   }
 
   return (
-    <Map
-      id="map"
-      level={6}
-      center={userLocation}
-      style={{ width: "100%", height: "100%" }}
-      onCenterChanged={onCenterChanged}
-    >
-      {changedLocation && (
-        <Circle
-          center={{
-            lat: changedLocation.lat,
-            lng: changedLocation.lng,
-          }}
-          radius={$place.searchDistance}
-          strokeWeight={2} // 선의 두께입니다
-          strokeColor={"#ff0000"} // 선의 색깔입니다
-          strokeOpacity={0.3} // 선의 불투명도 입니다 1에서 0 사이의 값이며 0에 가까울수록 투명합니다
-          strokeStyle={"solid"} // 선의 스타일 입니다
-          fillColor={"#000000"} // 채우기 색깔입니다
-          fillOpacity={0} // 채우기 불투명도 입니다
-        />
-      )}
-      {places.map((place, idx) => (
-        <React.Fragment key={`${place.name}_${idx}`}>
-          <MapMarker
-            position={{
-              lat: place.location.lat,
-              lng: place.location.lng,
-            }}
-            image={{
-              src: "/images/data.svg",
-              size: { width: 25, height: 25 },
-              options: { offset: { x: 12.5, y: 25 } },
-            }}
+    displayCoord && (
+      <Map
+        id="map"
+        level={5}
+        center={displayCoord}
+        style={{ width: "100%", height: "100%" }}
+        onCenterChanged={onCenterChanged}
+        isPanto={true}
+      >
+        {$place.refCoords && (
+          <Circle
+            center={{ lat: $place.refCoords.lat, lng: $place.refCoords.lng }}
+            radius={$place.searchDistance}
+            strokeWeight={2} // 선의 두께입니다
+            strokeColor={"#ff0000"} // 선의 색깔입니다
+            strokeOpacity={0.3} // 선의 불투명도 입니다 1에서 0 사이의 값이며 0에 가까울수록 투명합니다
+            strokeStyle={"solid"} // 선의 스타일 입니다
+            fillColor={"#000000"} // 채우기 색깔입니다
+            fillOpacity={0} // 채우기 불투명도 입니다
           />
-          {/* <CustomOverlayMap
+        )}
+        <MapMarker
+          draggable
+          onDragEnd={onMarkerDragEnd}
+          position={{
+            lat: displayCoord.lat,
+            lng: displayCoord.lng,
+          }}
+          image={{
+            src: "/images/location_my.svg",
+            size: { width: 50, height: 50 },
+            options: { offset: { x: 25, y: 50 } },
+          }}
+          zIndex={100}
+        />
+        {places.map((place, idx) => (
+          <React.Fragment key={`${place.name}_${idx}`}>
+            <MapMarker
+              position={{
+                lat: place.location.lat,
+                lng: place.location.lng,
+              }}
+              image={{
+                src: "/images/data.svg",
+                size: { width: 25, height: 25 },
+                options: { offset: { x: 12.5, y: 25 } },
+              }}
+            />
+            {/* <CustomOverlayMap
             position={{
               lat: place.location.lat,
               lng: place.location.lng,
@@ -195,8 +226,9 @@ export default function KakaoMap({
               <p>{place.name}</p>
             </div>
           </CustomOverlayMap> */}
-        </React.Fragment>
-      ))}
-    </Map>
+          </React.Fragment>
+        ))}
+      </Map>
+    )
   );
 }
