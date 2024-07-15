@@ -27,6 +27,7 @@ const useCurrentLocation = (): UseCurrentLocationResult => {
 
       try {
         if (isMobileDevice && "geolocation" in navigator) {
+          alert("Mobile device detected");
           console.log("Mobile device detected");
           const position = await new Promise<GeolocationPosition>(
             (resolve, reject) => {
