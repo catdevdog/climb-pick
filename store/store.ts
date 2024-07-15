@@ -19,8 +19,8 @@ interface State {
 
 const useStore = create<State>((set) => ({
   $place: {
-    searchDistance: 18000,
-    // 덕수궁 광명문: 37.5653926 126.9757768
+    searchDistance: 25000,
+    // 덕수궁 광명문: 37.5653926 126.9757768 - 18km
     refCoords: { lat: 37.5653926, lng: 126.9757768 },
 
     centerChanged: false,

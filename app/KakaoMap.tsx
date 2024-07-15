@@ -150,6 +150,17 @@ export default function KakaoMap({
     // $place.setcenterChanged(true);
   };
 
+  const onMapClick = (
+    map: kakao.maps.Map,
+    mouseEvent: kakao.maps.event.MouseEvent
+  ) => {
+    const latlng = mouseEvent.latLng;
+    setDisplayCoord({
+      lat: latlng.getLat(),
+      lng: latlng.getLng(),
+    });
+  };
+
   if (locationError) {
     return <div>위치를 가져오는데 실패했습니다: {locationError}</div>;
   }
@@ -167,17 +178,18 @@ export default function KakaoMap({
         style={{ width: "100%", height: "100%" }}
         onCenterChanged={onCenterChanged}
         isPanto={true}
+        onClick={(_, mouseEvent) => onMapClick(_, mouseEvent)}
       >
         {$place.refCoords && (
           <Circle
             center={{ lat: $place.refCoords.lat, lng: $place.refCoords.lng }}
             radius={$place.searchDistance}
-            strokeWeight={2} // 선의 두께입니다
-            strokeColor={"#ff0000"} // 선의 색깔입니다
-            strokeOpacity={0.3} // 선의 불투명도 입니다 1에서 0 사이의 값이며 0에 가까울수록 투명합니다
-            strokeStyle={"solid"} // 선의 스타일 입니다
-            fillColor={"#000000"} // 채우기 색깔입니다
-            fillOpacity={0} // 채우기 불투명도 입니다
+            strokeWeight={3} // 두께
+            strokeColor={"#ff0000"} // 색깔
+            strokeOpacity={0.3} // 불투명도
+            strokeStyle={"solid"} // 스타일
+            fillColor={"#000000"} // 채우기 색깔
+            fillOpacity={0} // 채우기 불투명도
           />
         )}
         <MapMarker
