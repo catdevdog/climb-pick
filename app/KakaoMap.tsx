@@ -5,61 +5,11 @@ import useStore from "@/store/store";
 import useFirebase from "@/hooks/useFirebase";
 import useAuth from "@/hooks/useAuth";
 import { TypePlace } from "@/types/place";
-import useGooglePlaces from "@/hooks/useGooglePlaces";
-import { set } from "firebase/database";
+import useSearchPlaces from "@/hooks/useSearchPlaces";
 
 // 카카오맵 컴포넌트 props 타입 정의
 type KakaoMapProps = {
   searchKeyword?: string;
-};
-
-// 장소 검색 훅
-const useSearchPlaces = (searchKeyword: string) => {
-  const { $place } = useStore();
-  const { getPlaces, savePlaces } = useFirebase();
-  const { searchNearbyPlaces } = useGooglePlaces();
-  const [places, setPlaces] = useState<TypePlace[]>([]);
-
-  /**
-   * 주어진 위치를 기준으로 장소를 검색합니다.
-   * @param lat 위도
-   * @param lng 경도
-   */
-  const searchPlaces = async (lat: number, lng: number) => {
-    try {
-      // Firebase에서 장소 검색
-      const firebasePlaces = await getPlaces(
-        lat,
-        lng,
-        $place.searchDistance / 1000
-      );
-
-      // TODO: Firebase에 데이터가 1건이라도 있으면 실제 API 데이터와 달라도 Firebase 데이터를 사용하는 현상 수정.
-      if (firebasePlaces.length > 0) {
-        setPlaces(firebasePlaces);
-        $place.setSearchResults(firebasePlaces);
-      } else {
-        console.debug(
-          "저장된 장소가 없습니다. Google Places API를 사용하여 검색합니다."
-        );
-        // Google Places API를 사용하여 검색
-        const googlePlaces = await searchNearbyPlaces(
-          lat,
-          lng,
-          $place.searchDistance,
-          searchKeyword
-        );
-        setPlaces(googlePlaces);
-        $place.setSearchResults(googlePlaces);
-        savePlaces(googlePlaces);
-      }
-    } catch (error) {
-      console.error("장소 검색 중 오류 발생:", error);
-      // 에러 처리 로직 추가
-    }
-  };
-
-  return { places, searchPlaces };
 };
 
 export default function KakaoMap({
@@ -70,7 +20,8 @@ export default function KakaoMap({
   const { $place } = useStore();
   const { user } = useAuth();
 
-  const { places, searchPlaces } = useSearchPlaces(searchKeyword);
+  const { places, searchPlaces, searchFirebasePlaces, searchGooglePlaces } =
+    useSearchPlaces(searchKeyword);
 
   const [selectedPlace, setSelectedPlace] = useState<TypePlace>();
   const [isKakaoLoaded, setIsKakaoLoaded] = useState(false);
@@ -112,8 +63,9 @@ export default function KakaoMap({
   // 검색 요청에 따른 장소 검색
   useEffect(() => {
     if ($place.searchRequest && displayCoord) {
-      // searchPlaces($place.refCoords.lat, $place.refCoords.lng);
-      // $place.setSearchRequest(false);
+      console.log("구글 장소 검색 요청:::::::");
+      searchGooglePlaces(displayCoord.lat, displayCoord.lng);
+      $place.setSearchRequest(false);
     }
   }, [$place.searchRequest, displayCoord]);
 
@@ -122,7 +74,6 @@ export default function KakaoMap({
    * @param map 카카오 맵 객체
    */
   const onCenterChanged = (map: kakao.maps.Map) => {
-    // $place.setcenterChanged(true);
     // setDisplayCoord({
     //   lat: map.getCenter().getLat(),
     //   lng: map.getCenter().getLng(),
@@ -135,6 +86,7 @@ export default function KakaoMap({
    */
   const onSelectPlace = (place: TypePlace) => {
     setSelectedPlace(place);
+    console.log("place", place);
   };
 
   /**
@@ -147,7 +99,6 @@ export default function KakaoMap({
       lat: position.getLat(),
       lng: position.getLng(),
     });
-    // $place.setcenterChanged(true);
   };
 
   const onMapClick = (
@@ -180,6 +131,16 @@ export default function KakaoMap({
         isPanto={true}
         onClick={(_, mouseEvent) => onMapClick(_, mouseEvent)}
       >
+        <Circle
+          center={{ lat: displayCoord.lat, lng: displayCoord.lng }}
+          radius={$place.googleSearchDistance}
+          strokeWeight={3} // 두께
+          strokeColor={"#0000ff"} // 색깔
+          strokeOpacity={0.3} // 불투명도
+          strokeStyle={"solid"} // 스타일
+          fillColor={"#000000"} // 채우기 색깔
+          fillOpacity={0} // 채우기 불투명도
+        />
         {$place.refCoords && (
           <Circle
             center={{ lat: $place.refCoords.lat, lng: $place.refCoords.lng }}

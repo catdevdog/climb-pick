@@ -37,14 +37,14 @@ export default function Home() {
       <div id="search-map" className="hidden"></div>
       <KakaoMap />
 
-      {$place.centerChanged && (
+      {openList && (
         <Button
           color="info"
           size="medium"
           className="fixed z-10 left-1/2 transform -translate-x-1/2 bottom-5"
           onClick={handleReSearch}
         >
-          이 지역에서 재검색
+          Google Map 검색
         </Button>
       )}
 

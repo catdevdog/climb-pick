@@ -5,6 +5,7 @@ import type { TypePlace } from "@/types/place";
 interface State {
   $place: {
     searchDistance: number;
+    googleSearchDistance: number;
     refCoords: { lat: number; lng: number };
 
     centerChanged: boolean;
@@ -20,6 +21,7 @@ interface State {
 const useStore = create<State>((set) => ({
   $place: {
     searchDistance: 25000,
+    googleSearchDistance: 2000,
     // 덕수궁 광명문: 37.5653926 126.9757768 - 18km
     refCoords: { lat: 37.5653926, lng: 126.9757768 },
 

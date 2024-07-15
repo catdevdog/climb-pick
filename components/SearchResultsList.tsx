@@ -19,9 +19,9 @@ const SearchResultsList: React.FC<SearchResultsListProps> = React.memo(
           <p>검색 결과가 없습니다.</p>
         ) : (
           <ul>
-            {results.map((result) => (
+            {results.map((result, idx) => (
               <li
-                key={result.name}
+                key={`${result.name}_${idx}`}
                 className="border-b border-gray-200 py-2 last:border-b-0"
               >
                 <h3 className="text-sm font-bold">{result.name}</h3>
