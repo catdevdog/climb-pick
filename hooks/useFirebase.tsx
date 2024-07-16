@@ -96,6 +96,7 @@ export function useFirebase(): UseFirebaseResult {
    */
   const savePlaces = async (places: TypePlace[]): Promise<void> => {
     const placesRef = ref(database, "places");
+    console.log(places);
 
     try {
       for (const place of places) {
@@ -114,6 +115,8 @@ export function useFirebase(): UseFirebaseResult {
             rating: place.rating ?? 0,
             user_ratings_total: place.user_ratings_total ?? 0,
             lastUpdated: new Date().toLocaleString("ko-KR"),
+            // photos: place.photos ?? [],
+            reviews: place.reviews ?? [],
           });
         }
       }

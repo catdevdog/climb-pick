@@ -82,11 +82,12 @@ export default function KakaoMap({
 
   /**
    * 장소 선택 핸들러
-   * @param place 선택된 장소 정보
+   * @param marker 선택된 장소 정보
    */
   const onSelectPlace = (place: TypePlace) => {
     setSelectedPlace(place);
-    console.log("place", place);
+    console.log("place", place.name, place);
+    alert(place.name);
   };
 
   /**
@@ -101,6 +102,11 @@ export default function KakaoMap({
     });
   };
 
+  /**
+   * 지도 클릭 핸들러
+   * @param map 카카오 맵 객체
+   * @param mouseEvent 마우스 이벤트 객체
+   */
   const onMapClick = (
     map: kakao.maps.Map,
     mouseEvent: kakao.maps.event.MouseEvent
@@ -179,6 +185,7 @@ export default function KakaoMap({
                 size: { width: 25, height: 25 },
                 options: { offset: { x: 12.5, y: 25 } },
               }}
+              onClick={() => onSelectPlace(place)}
             />
             {/* <CustomOverlayMap
             position={{

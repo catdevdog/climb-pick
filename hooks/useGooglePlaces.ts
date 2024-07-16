@@ -61,6 +61,8 @@ const useGooglePlaces = (): UseGooglePlacesResult => {
               rating: result.rating || 0,
               user_ratings_total: result.user_ratings_total || 0,
               lastUpdated: new Date().toLocaleString("ko-KR"),
+              photos: result.photos || [],
+              reviews: result.reviews || [],
             }));
             resolve(typePlaces);
           } else {
