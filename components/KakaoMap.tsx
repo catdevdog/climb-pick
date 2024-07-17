@@ -87,7 +87,8 @@ export default function KakaoMap({
   const onSelectPlace = (place: TypePlace) => {
     setSelectedPlace(place);
     console.log("place", place.name, place);
-    alert(place.name);
+    $place.setDetailPlace(place);
+    // alert(place.name);
   };
 
   /**
@@ -150,7 +151,7 @@ export default function KakaoMap({
         {$place.refCoords && (
           <Circle
             center={{ lat: $place.refCoords.lat, lng: $place.refCoords.lng }}
-            radius={$place.searchDistance}
+            radius={$place.SearchDistanceMax}
             strokeWeight={3} // 두께
             strokeColor={"#ff0000"} // 색깔
             strokeOpacity={0.3} // 불투명도

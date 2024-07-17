@@ -1,11 +1,12 @@
 "use client";
 
 import React, { useEffect, useState, useCallback } from "react";
-import KakaoMap from "./KakaoMap";
+import KakaoMap from "../components/KakaoMap";
 import useStore from "../store/store";
 import Button from "@/components/Button";
 import SearchResultsList from "@/components/SearchResultsList";
 import { useRouter } from "next/navigation";
+import Detail from "@/components/Detail";
 
 export default function Home() {
   const { $place } = useStore();
@@ -72,7 +73,7 @@ export default function Home() {
       >
         admin
       </Button>
-
+      {$place.detailPlace && <Detail />}
       {openList && <SearchResultsList results={$place.searchResults} />}
     </div>
   );

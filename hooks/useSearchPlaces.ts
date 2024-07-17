@@ -23,7 +23,7 @@ const useSearchPlaces = (searchKeyword: string) => {
       const firebasePlaces = await getPlaces(
         lat,
         lng,
-        $place.searchDistance / 1000
+        $place.SearchDistanceMax / 1000
       );
       return firebasePlaces;
     } catch (error) {
