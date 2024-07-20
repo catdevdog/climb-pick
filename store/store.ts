@@ -9,7 +9,14 @@ interface State {
     SearchDistanceMax: number;
 
     googleSearchDistance: number;
+
     refCoords: { lat: number; lng: number };
+
+    mostNearPlace: {
+      data: TypePlace | null;
+      distance: number;
+    }
+    setMostNearPlace: (place: TypePlace, distance: number) => void;
 
     centerChanged: boolean;
     setcenterChanged: (centerChanged: boolean) => void;
@@ -26,15 +33,28 @@ interface State {
 
 const useStore = create<State>((set) => ({
   $place: {
-    // 25000(서울) / 80400(경기도)
+    // DB검색 반경 25000(서울) / 80400(경기도)
     searchDistance: 25000,
     searchDistanceMin: 25000,
     SearchDistanceMax: 80400,
 
+    // API 검색 반경 2000m
     googleSearchDistance: 2000,
+
+    // 검색 기준 좌표
     // 덕수궁 광명문: 37.5653926 126.9757768 - 18km (서울)
     // 미음나루: 37.5864428 127.1702517 - 80.4km (경기도)
     refCoords: { lat: 37.5864428, lng: 127.1702517 },
+
+    mostNearPlace: {
+      data: null,
+      distance: 0,
+    },
+    setMostNearPlace: (place, distance) =>
+      set((state) => ({
+        $place: { ...state.$place, mostNearPlace: { data: place, distance } },
+      })),
+
 
     centerChanged: false,
     setcenterChanged: (centerChanged) =>

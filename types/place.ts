@@ -13,4 +13,5 @@ export type TypePlace = {
   user_ratings_total: number;
   photos?: google.maps.places.PlacePhoto[] | [];
   reviews?: google.maps.places.PlaceReview[] | [];
+  distance?: number;
 };

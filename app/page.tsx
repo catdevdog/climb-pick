@@ -7,6 +7,7 @@ import Button from "@/components/Button";
 import SearchResultsList from "@/components/SearchResultsList";
 import { useRouter } from "next/navigation";
 import Detail from "@/components/Detail";
+import MostNearPlace from "@/components/MostNearPlace";
 
 export default function Home() {
   const { $place } = useStore();
@@ -75,6 +76,7 @@ export default function Home() {
       </Button>
       {$place.detailPlace && <Detail />}
       {openList && <SearchResultsList results={$place.searchResults} />}
+      {$place.mostNearPlace.data && <MostNearPlace />}
     </div>
   );
 }

@@ -6,6 +6,7 @@ import useFirebase from "@/hooks/useFirebase";
 import useAuth from "@/hooks/useAuth";
 import { TypePlace } from "@/types/place";
 import useSearchPlaces from "@/hooks/useSearchPlaces";
+import { calculateDistance } from "@/utils";
 
 // 카카오맵 컴포넌트 props 타입 정의
 type KakaoMapProps = {
@@ -25,6 +26,7 @@ export default function KakaoMap({
 
   const [selectedPlace, setSelectedPlace] = useState<TypePlace>();
   const [isKakaoLoaded, setIsKakaoLoaded] = useState(false);
+  const [filteredPlaces, setFilteredPlaces] = useState<TypePlace[]>([]);
 
   // 사용자 현재 위치
   const [useCoord, setUserCoord] = useState<{
@@ -68,6 +70,37 @@ export default function KakaoMap({
       $place.setSearchRequest(false);
     }
   }, [$place.searchRequest, displayCoord]);
+
+  // 선택 좌표 변경 시 가장 가까운 장소 순으로 정렬
+  useEffect(() => {
+    if (displayCoord && places.length > 0) {
+      const sortedPlaces = [...places].sort((a, b) => {
+        const aDistance = calculateDistance(
+          displayCoord.lat,
+          displayCoord.lng,
+          a.location.lat,
+          a.location.lng
+        );
+        const bDistance = calculateDistance(
+          displayCoord.lat,
+          displayCoord.lng,
+          b.location.lat,
+          b.location.lng
+        );
+        return aDistance - bDistance;
+      });
+      setFilteredPlaces(sortedPlaces);
+      $place.setMostNearPlace(sortedPlaces[0], calculateDistance(displayCoord.lat, displayCoord.lng, sortedPlaces[0].location.lat, sortedPlaces[0].location.lng));
+    }
+  }, [displayCoord, places]);
+
+  // 가장 가까운 장소 변경 시 상세 정보 설정
+  useEffect(() => {
+    if ($place.mostNearPlace.data) {
+      console.log("가장 가까운 장소", $place.mostNearPlace.data);
+    }
+  }, [$place.mostNearPlace]);
+
 
   /**
    * 지도 중심 변경 핸들러
@@ -160,6 +193,8 @@ export default function KakaoMap({
             fillOpacity={0} // 채우기 불투명도
           />
         )}
+
+        {/* 사용자 선택 위치 */}
         <MapMarker
           draggable
           onDragEnd={onMarkerDragEnd}
