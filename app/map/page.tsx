@@ -8,11 +8,13 @@ import SearchResultsList from "@/components/SearchResultsList";
 import { useRouter } from "next/navigation";
 import Detail from "@/components/Detail";
 import MostNearPlace from "@/components/MostNearPlace";
+import Modal from "@/components/Modal";
 
 export default function Home() {
   const { $place } = useStore();
   const [openList, setOpenList] = useState(false);
   const router = useRouter();
+  const [openModal, setOpenModal] = useState(false);
 
   useEffect(() => {
     if ($place.searchResults.length > 0) {
@@ -35,48 +37,67 @@ export default function Home() {
   }, [$place]);
 
   return (
-    <div className="w-full h-screen relative">
-      <div id="search-map" className="hidden"></div>
-      <KakaoMap />
+    <>
+      <div className="w-full h-screen relative">
+        <div id="search-map" className="hidden"></div>
+        <KakaoMap />
 
-      {openList && (
-        <Button
-          color="info"
-          size="medium"
-          className="fixed z-10 left-1/2 transform -translate-x-1/2 bottom-5"
-          onClick={handleReSearch}
-        >
-          Google Map 검색
-        </Button>
-      )}
+        {openList && (
+          <Button
+            color="info"
+            size="medium"
+            className="fixed z-10 left-1/2 transform -translate-x-1/2 bottom-5"
+            onClick={handleReSearch}
+          >
+            Google Map 검색
+          </Button>
+        )}
 
-      {$place.searchResults.length > 0 && (
+        {false && $place.searchResults.length > 0 && (
+          <Button
+            color="info"
+            size="medium"
+            icon
+            className="fixed z-10 bottom-5 left-5 rounded-full"
+            onClick={toggleList}
+          >
+            <i className="material-symbols-outlined">
+              {openList ? "close" : "menu"}
+            </i>
+          </Button>
+        )}
+
         <Button
-          color="info"
+          color="primary"
           size="medium"
           icon
-          className="fixed z-10 bottom-5 left-5 rounded-full"
-          onClick={toggleList}
+          className="fixed z-10 left-5 bottom-5"
+          onClick={() => { setOpenModal(true) }}
         >
           <i className="material-symbols-outlined">
-            {openList ? "close" : "menu"}
+            add_location_alt
           </i>
         </Button>
-      )}
 
-      <Button
-        color="black"
-        size="medium"
-        className="fixed z-10 right-5 bottom-5"
-        onClick={() => {
-          router.push("/data");
-        }}
-      >
-        admin
-      </Button>
-      {$place.detailPlace && <Detail />}
-      {openList && <SearchResultsList results={$place.searchResults} />}
-      {$place.mostNearPlace.data && <MostNearPlace />}
-    </div>
+        <Button
+          color="black"
+          size="medium"
+          className="fixed z-10 right-5 bottom-5"
+          onClick={() => {
+            router.push("/data");
+          }}
+        >
+          admin
+        </Button>
+        {$place.detailPlace && <Detail />}
+        {openList && <SearchResultsList results={$place.searchResults} />}
+        {$place.mostNearPlace.data && <MostNearPlace />}
+      </div>
+      <Modal title="비교 위치 추가하기" isOpen={openModal} onClose={() => { setOpenModal(false) }}>
+        <div>
+          <p>위치 추가 로직 필요</p>
+        </div>
+      </Modal>
+    </>
   );
 }
