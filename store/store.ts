@@ -12,6 +12,10 @@ interface State {
 
     refCoords: { lat: number; lng: number };
 
+    coordColors: string[];
+    selectedCoords: { coord: { lat: number; lng: number }, color: string }[];
+    setSelectedCoords: (coords: { coord: { lat: number; lng: number }, color: string }[]) => void;
+
     mostNearPlace: {
       data: TypePlace | null;
       distance: number;
@@ -45,6 +49,12 @@ const useStore = create<State>((set) => ({
     // 덕수궁 광명문: 37.5653926 126.9757768 - 18km (서울)
     // 미음나루: 37.5864428 127.1702517 - 80.4km (경기도)
     refCoords: { lat: 37.5864428, lng: 127.1702517 },
+
+    // 선택된 기준 좌표 리스트
+    coordColors: ['secondary', 'warning', 'danger'],
+    selectedCoords: [],
+    setSelectedCoords: (coords) =>
+      set((state) => ({ $place: { ...state.$place, selectedCoords: coords } })),
 
     mostNearPlace: {
       data: null,

@@ -1,8 +1,11 @@
 "use client";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import Button from "@/components/Button";
 
 export default function Home() {
-    return (
+    const router = useRouter();
+    return (<>
         <div className="p-5 h-full">
             <div className="flex h-full flex-wrap flex-col gap-5 justify-center items-center">
                 <Link href="/" className="max-w-52 max-h-52 border-red-400 border-2 rounded-lg rou overflow-hidden relative shadow-xl shadow-gray-400">
@@ -15,5 +18,16 @@ export default function Home() {
                 </Link>
             </div>
         </div>
+        <Button
+            color="black"
+            size="medium"
+            className="fixed z-10 right-5 bottom-5"
+            onClick={() => {
+                router.push("/data");
+            }}
+        >
+            admin
+        </Button>
+    </>
     )
 }

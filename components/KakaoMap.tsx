@@ -161,7 +161,7 @@ export default function KakaoMap({
   }
 
   return (
-    displayCoord && (
+    displayCoord && (<>
       <Map
         id="map"
         level={5}
@@ -171,7 +171,7 @@ export default function KakaoMap({
         isPanto={true}
         onClick={(_, mouseEvent) => onMapClick(_, mouseEvent)}
       >
-        <Circle
+        {/* <Circle
           center={{ lat: displayCoord.lat, lng: displayCoord.lng }}
           radius={$place.googleSearchDistance}
           strokeWeight={3} // 두께
@@ -180,7 +180,7 @@ export default function KakaoMap({
           strokeStyle={"solid"} // 스타일
           fillColor={"#000000"} // 채우기 색깔
           fillOpacity={0} // 채우기 불투명도
-        />
+        /> */}
         {$place.refCoords && (
           <Circle
             center={{ lat: $place.refCoords.lat, lng: $place.refCoords.lng }}
@@ -204,47 +204,36 @@ export default function KakaoMap({
           }}
           image={{
             src: "/images/location_my.svg",
-            size: { width: 50, height: 50 },
-            options: { offset: { x: 25, y: 50 } },
+            size: { width: 30, height: 30 },
+            options: { offset: { x: 15, y: 30 } },
           }}
           zIndex={100}
         />
+
+        {/* 모든 장소 표기 */}
         {places.map((place, idx) => (
           <React.Fragment key={`${place.name}_${idx}`}>
-            <MapMarker
+            <CustomOverlayMap
               position={{
                 lat: place.location.lat,
                 lng: place.location.lng,
               }}
-              image={{
-                src: "/images/data.svg",
-                size: { width: 25, height: 25 },
-                options: { offset: { x: 12.5, y: 25 } },
-              }}
-              onClick={() => onSelectPlace(place)}
-            />
-            {/* <CustomOverlayMap
-            position={{
-              lat: place.location.lat,
-              lng: place.location.lng,
-            }}
-            yAnchor={0}
-            xAnchor={0}
-          >
-            <div
-              onClick={() => onSelectPlace(place)}
-              className={`bg-black ${
-                selectedPlace && selectedPlace.name !== place.name
-                  ? "bg-opacity-50 -z-10"
-                  : "bg-opacity-100 relative z-10"
-              } text-white p-1 px-2 rounded-lg rounded-tl-none`}
             >
-              <p>{place.name}</p>
-            </div>
-          </CustomOverlayMap> */}
+              <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-full w-5 h-5">
+                <img src="/images/data.svg" alt="data" className=" w-5 h-5 max-w-5" />
+                {
+                  place.name === $place.mostNearPlace.data?.name && (
+                    <>
+                      <span className="animate-ping absolute top-1/2 inline-flex h-full w-full rounded-full bg-sky-500 opacity-90"></span>
+                      <span className="relative inline-flex top-1/2 rounded-full bg-transparent"></span>
+                    </>
+                  )
+                }
+              </div>
+            </CustomOverlayMap>
           </React.Fragment>
         ))}
       </Map>
-    )
+    </>)
   );
 }

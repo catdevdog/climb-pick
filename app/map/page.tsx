@@ -15,6 +15,8 @@ export default function Home() {
   const [openList, setOpenList] = useState(false);
   const router = useRouter();
   const [openModal, setOpenModal] = useState(false);
+  const [openCoordButtons, setOpenCoordButtons] = useState(false);
+  const [openAnimation, setOpenAnimation] = useState(false);
 
   useEffect(() => {
     if ($place.searchResults.length > 0) {
@@ -68,27 +70,38 @@ export default function Home() {
         )}
 
         <Button
-          color="primary"
+          color="black"
           size="medium"
           icon
-          className="fixed z-10 left-5 bottom-5"
-          onClick={() => { setOpenModal(true) }}
+          className="fixed z-20 left-5 bottom-5"
+          onClick={() => { setOpenCoordButtons(!openCoordButtons) }}
         >
           <i className="material-symbols-outlined">
-            add_location_alt
+            {openCoordButtons ? 'close' : 'add_location_alt'}
           </i>
         </Button>
 
-        <Button
-          color="black"
-          size="medium"
-          className="fixed z-10 right-5 bottom-5"
-          onClick={() => {
-            router.push("/data");
-          }}
-        >
-          admin
-        </Button>
+        <div className={`fixed z-10 overflow-hidden ${openCoordButtons ? 'left-16 w-full' : 'left-5 w-1'} bottom-5 flex gap-1 duration-300`}>
+          {
+            ($place.coordColors.map((item, idx) => {
+              return (
+                <Button
+                  key={item}
+                  color={item as any}
+                  size="medium"
+                  icon
+                  onClick={() => { setOpenModal(false) }}
+                >
+                  <i className="material-symbols-outlined">
+                    add_location_alt
+                  </i>
+                </Button>
+              )
+            })
+            )
+          }
+        </div>
+
         {$place.detailPlace && <Detail />}
         {openList && <SearchResultsList results={$place.searchResults} />}
         {$place.mostNearPlace.data && <MostNearPlace />}
