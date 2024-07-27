@@ -2,9 +2,13 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Button from "@/components/Button";
+import { use, useEffect } from "react";
 
 export default function Home() {
     const router = useRouter();
+    useEffect(() => {
+        router.prefetch("/map");
+    }, []);
     return (<>
         <div className="p-5 h-full">
             <div className="flex h-full flex-wrap flex-col gap-5 justify-center items-center">

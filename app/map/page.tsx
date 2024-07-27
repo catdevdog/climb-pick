@@ -62,13 +62,13 @@ export default function Home() {
       <div className="w-full h-screen relative">
         <div id="search-map" className="hidden"></div>
         <KakaoMap />
-        <Button color="black"
+        {/* <Button color="black"
           size="medium"
           className="fixed z-10 right-5 bottom-5"
           onClick={checkStore}
         >
           store console
-        </Button>
+        </Button> */}
 
         {openList && (
           <Button
