@@ -38,11 +38,37 @@ export default function Home() {
     $place.setSearchRequest(true);
   }, [$place]);
 
+  /**
+   * 다중 좌표 스토어 저장 함수
+   */
+  const handleSaveSelectedCoords = (color: string) => {
+    const coords = $place.selectedCoords;
+    const selectedIdx = coords.findIndex((item) => item.color === color);
+    if (selectedIdx > -1) {
+      coords.splice(selectedIdx, 1);
+      $place.setSelectedCoords(coords);
+    } else {
+      $place.setSelectedCoords([...coords, { coord: { lat: $place.currentMapCenter.lat, lng: $place.currentMapCenter.lng }, color: color }]);
+    }
+  }
+
+
+  const checkStore = () => {
+    console.log($place);
+  }
+
   return (
     <>
       <div className="w-full h-screen relative">
         <div id="search-map" className="hidden"></div>
         <KakaoMap />
+        <Button color="black"
+          size="medium"
+          className="fixed z-10 right-5 bottom-5"
+          onClick={checkStore}
+        >
+          store console
+        </Button>
 
         {openList && (
           <Button
@@ -90,7 +116,7 @@ export default function Home() {
                   color={item as any}
                   size="medium"
                   icon
-                  onClick={() => { setOpenModal(false) }}
+                  onClick={() => { handleSaveSelectedCoords(item) }}
                 >
                   <i className="material-symbols-outlined">
                     add_location_alt

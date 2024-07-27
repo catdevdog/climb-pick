@@ -16,6 +16,9 @@ interface State {
     selectedCoords: { coord: { lat: number; lng: number }, color: string }[];
     setSelectedCoords: (coords: { coord: { lat: number; lng: number }, color: string }[]) => void;
 
+    currentMapCenter: { lat: number; lng: number };
+    setCurrentMapCenter: (center: { lat: number; lng: number }) => void;
+
     mostNearPlace: {
       data: TypePlace | null;
       distance: number;
@@ -55,6 +58,11 @@ const useStore = create<State>((set) => ({
     selectedCoords: [],
     setSelectedCoords: (coords) =>
       set((state) => ({ $place: { ...state.$place, selectedCoords: coords } })),
+
+    // 현재 지도 중심 좌표
+    currentMapCenter: { lat: 0, lng: 0 },
+    setCurrentMapCenter: (center) =>
+      set((state) => ({ $place: { ...state.$place, currentMapCenter: center } })),
 
     mostNearPlace: {
       data: null,

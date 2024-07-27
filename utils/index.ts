@@ -1,3 +1,5 @@
+import { TypePlace } from "@/types/place";
+
 const formatTimestamp = (date: Date): string => {
   const now = new Date();
   const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
@@ -40,4 +42,33 @@ const calculateDistance = (
   return (R * c) / 1000; // km 단위 거리
 };
 
-export { formatTimestamp, calculateDistance };
+const getCentroid = (locations: { lat: number, lng: number }[]): { lat: number, lng: number } => {
+  const total = locations.reduce((acc, location) => {
+    return {
+      lat: acc.lat + location.lat,
+      lng: acc.lng + location.lng
+    };
+  }, { lat: 0, lng: 0 });
+
+  return {
+    lat: total.lat / locations.length,
+    lng: total.lng / locations.length
+  };
+}
+const searchClosetLocation = (coordinates: { lat: number, lng: number }[], locations: TypePlace[]): TypePlace | null => {
+  const centroid = getCentroid(coordinates);
+  let closestLocation: TypePlace | null = null;
+  let minDistance = Number.MAX_SAFE_INTEGER;
+
+  for (const location of locations) {
+    const distance = calculateDistance(centroid.lat, centroid.lng, location.location.lat, location.location.lng);
+    if (distance < minDistance) {
+      minDistance = distance;
+      closestLocation = location;
+    }
+  }
+
+  return closestLocation;
+}
+
+export { formatTimestamp, calculateDistance, getCentroid, searchClosetLocation };
