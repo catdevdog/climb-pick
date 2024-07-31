@@ -4,6 +4,9 @@ import type { TypePlace } from "@/types/place";
 
 interface State {
   $place: {
+    openMap: boolean;
+    setOpenMap: (openMap: boolean) => void;
+
     searchDistance: number;
     searchDistanceMin: number;
     SearchDistanceMax: number;
@@ -40,6 +43,10 @@ interface State {
 
 const useStore = create<State>((set) => ({
   $place: {
+    openMap: false,
+    setOpenMap: (openMap) =>
+      set((state) => ({ $place: { ...state.$place, openMap: openMap } })),
+
     // DB검색 반경 25000(서울) / 80400(경기도)
     searchDistance: 25000,
     searchDistanceMin: 25000,

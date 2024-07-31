@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation";
 import Detail from "@/components/Detail";
 import MostNearPlace from "@/components/MostNearPlace";
 import Modal from "@/components/Modal";
+import Main from "@/components/Main";
 
 export default function Home() {
   const { $place } = useStore();
@@ -61,6 +62,7 @@ export default function Home() {
     <>
       <div className="w-full h-screen relative">
         <div id="search-map" className="hidden"></div>
+        <Main />
         <KakaoMap />
         {/* <Button color="black"
           size="medium"
@@ -99,7 +101,7 @@ export default function Home() {
           color="black"
           size="medium"
           icon
-          className="fixed z-20 left-5 bottom-5"
+          className="fixed z-10 left-5 bottom-5"
           onClick={() => { setOpenCoordButtons(!openCoordButtons) }}
         >
           <i className="material-symbols-outlined">
@@ -107,7 +109,7 @@ export default function Home() {
           </i>
         </Button>
 
-        <div className={`fixed z-10 overflow-hidden ${openCoordButtons ? 'left-16 w-full' : 'left-5 w-1'} bottom-5 flex gap-1 duration-300`}>
+        <div className={`fixed z-[9] overflow-hidden ${openCoordButtons ? 'left-16 w-full' : 'left-5 w-1'} bottom-5 flex gap-1 duration-300`}>
           {
             ($place.coordColors.map((item, idx) => {
               return (

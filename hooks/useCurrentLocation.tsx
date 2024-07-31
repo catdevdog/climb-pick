@@ -20,47 +20,60 @@ const useCurrentLocation = (): UseCurrentLocationResult => {
 
   useEffect(() => {
     const getUserLocation = async () => {
-      const isMobileDevice =
-        /mobile|android|iphone|ipad|ipod|blackberry|windows phone/i.test(
-          navigator.userAgent.toLowerCase()
+      const TIMEOUT = 5 * 1000;
+
+      const getPositionPromise = () =>
+        new Promise<GeolocationPosition>((resolve, reject) => {
+          navigator.geolocation.getCurrentPosition(resolve, reject, {
+            enableHighAccuracy: true,
+            timeout: TIMEOUT,
+            maximumAge: 0,
+          });
+        });
+
+      const getGoogleLocation = async () => {
+        const response = await fetch(
+          `https://www.googleapis.com/geolocation/v1/geolocate?key=${process.env.NEXT_PUBLIC_GOOGLE_MAP_API_KEY}`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+          }
         );
 
+        if (!response.ok) {
+          throw new Error("Failed to fetch location from Google API");
+        }
+
+        const data = await response.json();
+        return { lat: data.location.lat, lng: data.location.lng };
+      };
+
       try {
-        if (isMobileDevice && "geolocation" in navigator) {
-          alert("Mobile device detected");
-          console.log("Mobile device detected");
-          const position = await new Promise<GeolocationPosition>(
-            (resolve, reject) => {
-              navigator.geolocation.getCurrentPosition(resolve, reject, {
-                enableHighAccuracy: true,
-                timeout: 10000,
-                maximumAge: 0,
-              });
-            }
-          );
-
-          setLocation({
-            lat: position.coords.latitude,
-            lng: position.coords.longitude,
-          });
-        } else {
-          console.log("Non-mobile device or geolocation not supported");
-          const response = await fetch(
-            `https://www.googleapis.com/geolocation/v1/geolocate?key=${process.env.NEXT_PUBLIC_GOOGLE_MAP_API_KEY}`,
-            {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-            }
-          );
-
-          if (!response.ok) {
-            throw new Error("Failed to fetch location from Google API");
+        if ("geolocation" in navigator) {
+          console.log("Geolocation is supported, trying to get position");
+          try {
+            const position = await Promise.race([
+              getPositionPromise(),
+              new Promise<never>((_, reject) =>
+                setTimeout(() => reject(new Error("Geolocation timeout")), TIMEOUT)
+              )
+            ]);
+            setLocation({
+              lat: position.coords.latitude,
+              lng: position.coords.longitude,
+            });
+          } catch (geoError) {
+            console.log("Geolocation failed or timed out, falling back to Google API", geoError);
+            const googleLocation = await getGoogleLocation();
+            setLocation(googleLocation);
           }
-
-          const data = await response.json();
-          setLocation({ lat: data.location.lat, lng: data.location.lng });
+        } else {
+          console.log("Geolocation is not supported, using Google API");
+          const googleLocation = await getGoogleLocation();
+          setLocation(googleLocation);
         }
       } catch (err) {
+        console.error("Error getting location:", err);
         setError(
           err instanceof Error ? err.message : "An unknown error occurred"
         );
