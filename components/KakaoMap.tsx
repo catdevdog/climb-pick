@@ -7,6 +7,7 @@ import useAuth from "@/hooks/useAuth";
 import { TypePlace } from "@/types/place";
 import useSearchPlaces from "@/hooks/useSearchPlaces";
 import { calculateDistance, searchClosetLocation } from "@/utils";
+import Image from "next/image";
 
 // 카카오맵 컴포넌트 props 타입 정의
 type KakaoMapProps = {
@@ -21,14 +22,21 @@ export default function KakaoMap({
   const { saveUser } = useFirebase();
   const { $place } = useStore();
   const { user } = useAuth();
-  const { places, searchPlaces, searchGooglePlaces } = useSearchPlaces(searchKeyword);
+  const { places, searchPlaces, searchGooglePlaces } =
+    useSearchPlaces(searchKeyword);
 
   // 상태 관리
   const [selectedPlace, setSelectedPlace] = useState<TypePlace>();
   const [isKakaoLoaded, setIsKakaoLoaded] = useState(false);
   const [mapCenter, setMapCenter] = useState<{ lat: number; lng: number }>();
-  const [userCoord, setUserCoord] = useState<{ lat: number; lng: number } | null>(null);
-  const [displayCoord, setDisplayCoord] = useState<{ lat: number; lng: number } | null>(null);
+  const [userCoord, setUserCoord] = useState<{
+    lat: number;
+    lng: number;
+  } | null>(null);
+  const [displayCoord, setDisplayCoord] = useState<{
+    lat: number;
+    lng: number;
+  } | null>(null);
 
   // Kakao 지도 SDK 로드 확인
   useEffect(() => {
@@ -64,16 +72,38 @@ export default function KakaoMap({
   // 선택 좌표 변경 시 가장 가까운 장소 정렬
   useEffect(() => {
     if (displayCoord) {
-      $place.setSelectedCoords([{ coord: displayCoord, color: 'info' }]);
+      $place.setSelectedCoords([{ coord: displayCoord, color: "info" }]);
     }
-    if (displayCoord && places.length > 0 && $place.selectedCoords.length === 1) {
+    if (
+      displayCoord &&
+      places.length > 0 &&
+      $place.selectedCoords.length === 1
+    ) {
       const sortedPlaces = [...places].sort((a, b) => {
-        const aDistance = calculateDistance(displayCoord.lat, displayCoord.lng, a.location.lat, a.location.lng);
-        const bDistance = calculateDistance(displayCoord.lat, displayCoord.lng, b.location.lat, b.location.lng);
+        const aDistance = calculateDistance(
+          displayCoord.lat,
+          displayCoord.lng,
+          a.location.lat,
+          a.location.lng
+        );
+        const bDistance = calculateDistance(
+          displayCoord.lat,
+          displayCoord.lng,
+          b.location.lat,
+          b.location.lng
+        );
         return aDistance - bDistance;
       });
 
-      $place.setMostNearPlace(sortedPlaces[0], calculateDistance(displayCoord.lat, displayCoord.lng, sortedPlaces[0].location.lat, sortedPlaces[0].location.lng));
+      $place.setMostNearPlace(
+        sortedPlaces[0],
+        calculateDistance(
+          displayCoord.lat,
+          displayCoord.lng,
+          sortedPlaces[0].location.lat,
+          sortedPlaces[0].location.lng
+        )
+      );
     }
   }, [displayCoord, places]);
 
@@ -91,7 +121,15 @@ export default function KakaoMap({
       const selectedCoords = $place.selectedCoords.map((item) => item.coord);
       const closestLocation = searchClosetLocation(selectedCoords, places);
       if (closestLocation) {
-        $place.setMostNearPlace(closestLocation, calculateDistance(selectedCoords[0].lat, selectedCoords[0].lng, closestLocation.location.lat, closestLocation.location.lng));
+        $place.setMostNearPlace(
+          closestLocation,
+          calculateDistance(
+            selectedCoords[0].lat,
+            selectedCoords[0].lng,
+            closestLocation.location.lat,
+            closestLocation.location.lng
+          )
+        );
       }
     }
   }, [$place.selectedCoords]);
@@ -110,7 +148,11 @@ export default function KakaoMap({
     $place.setDetailPlace(place);
   };
 
-  const onMarkerDragEnd = (marker: kakao.maps.Marker, color: string, idx: number) => {
+  const onMarkerDragEnd = (
+    marker: kakao.maps.Marker,
+    color: string,
+    idx: number
+  ) => {
     const position = marker.getPosition();
     if (idx === 0 && $place.selectedCoords.length === 1) {
       setDisplayCoord({
@@ -123,7 +165,13 @@ export default function KakaoMap({
     if (selectedIdx > -1) {
       coords.splice(selectedIdx, 1);
     }
-    $place.setSelectedCoords([...coords, { coord: { lat: position.getLat(), lng: position.getLng() }, color: color }]);
+    $place.setSelectedCoords([
+      ...coords,
+      {
+        coord: { lat: position.getLat(), lng: position.getLng() },
+        color: color,
+      },
+    ]);
   };
 
   const onMapClick = (
@@ -225,7 +273,13 @@ export default function KakaoMap({
             }}
           >
             <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-full w-5 h-5">
-              <img src="/images/data.svg" alt="data" className="w-5 h-5 max-w-5" />
+              <Image
+                src="/images/data.svg"
+                alt="data"
+                className="w-5 h-5 max-w-5"
+                width={20}
+                height={20}
+              />
               {place.name === $place.mostNearPlace.data?.name && (
                 <>
                   <span className="animate-ping absolute top-1/2 inline-flex h-full w-full rounded-full bg-sky-500 opacity-90"></span>
