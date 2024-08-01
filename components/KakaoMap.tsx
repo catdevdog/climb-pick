@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Map, MapMarker, CustomOverlayMap, Circle } from "react-kakao-maps-sdk";
 import useCurrentLocation from "@/hooks/useCurrentLocation";
 import useStore from "@/store/store";
@@ -17,7 +17,7 @@ type KakaoMapProps = {
 export default function KakaoMap({
   searchKeyword = "클라이밍",
 }: KakaoMapProps) {
-  // 훅 및 상태 초기화
+  // 커스텀 훅 및 상태 초기화
   const { location: initLocation, error: locationError } = useCurrentLocation();
   const { saveUser } = useFirebase();
   const { $place } = useStore();
@@ -26,7 +26,6 @@ export default function KakaoMap({
     useSearchPlaces(searchKeyword);
 
   // 상태 관리
-  const [selectedPlace, setSelectedPlace] = useState<TypePlace>();
   const [isKakaoLoaded, setIsKakaoLoaded] = useState(false);
   const [mapCenter, setMapCenter] = useState<{ lat: number; lng: number }>();
   const [userCoord, setUserCoord] = useState<{
@@ -37,6 +36,8 @@ export default function KakaoMap({
     lat: number;
     lng: number;
   } | null>(null);
+  const mapRef = useRef<kakao.maps.Map>(null);
+  const [zoom, setZoom] = useState(5);
 
   // Kakao 지도 SDK 로드 확인
   useEffect(() => {
@@ -46,10 +47,11 @@ export default function KakaoMap({
   // 초기 위치 설정 및 사용자 정보 저장
   useEffect(() => {
     if (initLocation && user) {
-      console.log("초기 위치:", initLocation);
+      const { lat, lng } = initLocation;
       setUserCoord(initLocation);
       setDisplayCoord(initLocation);
-      saveUser(user.uid, initLocation.lat, initLocation.lng);
+      $place.setSelectedCoords([{ coord: { lat, lng }, color: "info" }]);
+      saveUser(user.uid, lat, lng);
     }
   }, [initLocation, user]);
 
@@ -58,81 +60,76 @@ export default function KakaoMap({
     if (isKakaoLoaded && userCoord) {
       searchPlaces($place.refCoords.lat, $place.refCoords.lng);
     }
-  }, [isKakaoLoaded, userCoord]);
+  }, [isKakaoLoaded, userCoord, $place.refCoords]);
 
   // 검색 요청에 따른 장소 검색
   useEffect(() => {
-    if ($place.searchRequest && displayCoord) {
-      console.log("구글 장소 검색 요청");
-      searchGooglePlaces(displayCoord.lat, displayCoord.lng);
-      $place.setSearchRequest(false);
+    if (isKakaoLoaded && userCoord) {
+      searchPlaces($place.refCoords.lat, $place.refCoords.lng);
     }
-  }, [$place.searchRequest, displayCoord]);
+  }, [isKakaoLoaded, userCoord]);
 
   // 선택 좌표 변경 시 가장 가까운 장소 정렬
   useEffect(() => {
-    if (displayCoord) {
-      $place.setSelectedCoords([{ coord: displayCoord, color: "info" }]);
-    }
-    if (
-      displayCoord &&
-      places.length > 0 &&
-      $place.selectedCoords.length === 1
-    ) {
+    if (places.length > 0 && $place.selectedCoords.length === 1) {
       const sortedPlaces = [...places].sort((a, b) => {
+        const { lat, lng } = $place.selectedCoords[0].coord;
         const aDistance = calculateDistance(
-          displayCoord.lat,
-          displayCoord.lng,
+          lat,
+          lng,
           a.location.lat,
           a.location.lng
         );
         const bDistance = calculateDistance(
-          displayCoord.lat,
-          displayCoord.lng,
+          lat,
+          lng,
           b.location.lat,
           b.location.lng
         );
         return aDistance - bDistance;
       });
 
-      $place.setMostNearPlace(
-        sortedPlaces[0],
-        calculateDistance(
-          displayCoord.lat,
-          displayCoord.lng,
-          sortedPlaces[0].location.lat,
-          sortedPlaces[0].location.lng
-        )
+      const nearestPlace = sortedPlaces[0];
+      const distance = calculateDistance(
+        $place.selectedCoords[0].coord.lat,
+        $place.selectedCoords[0].coord.lng,
+        nearestPlace.location.lat,
+        nearestPlace.location.lng
       );
+      $place.setMostNearPlace(nearestPlace, distance);
     }
   }, [displayCoord, places]);
 
-  // 가장 가까운 장소 변경 시 상세 정보 설정
-  useEffect(() => {
-    if ($place.mostNearPlace.data) {
-      // console.log("가장 가까운 장소:", $place.mostNearPlace.data);
-    }
-  }, [$place.mostNearPlace]);
-
   // 여러 장소 기준 가장 가까운 장소 검색
   useEffect(() => {
-    console.log("선택된 좌표:", $place.selectedCoords);
     if ($place.selectedCoords.length > 1) {
       const selectedCoords = $place.selectedCoords.map((item) => item.coord);
       const closestLocation = searchClosetLocation(selectedCoords, places);
       if (closestLocation) {
-        $place.setMostNearPlace(
-          closestLocation,
-          calculateDistance(
-            selectedCoords[0].lat,
-            selectedCoords[0].lng,
-            closestLocation.location.lat,
-            closestLocation.location.lng
-          )
+        const distance = calculateDistance(
+          selectedCoords[0].lat,
+          selectedCoords[0].lng,
+          closestLocation.location.lat,
+          closestLocation.location.lng
         );
+        $place.setMostNearPlace(closestLocation, distance);
       }
     }
-  }, [$place.selectedCoords]);
+  }, [$place.selectedCoords, places]);
+
+  // 가장 가까운 장소 클릭 시 지도 이동
+  useEffect(() => {
+    if ($place.selectedDetailPlace && $place.moveTrigger) {
+      moveToCoord(
+        {
+          lat: $place.selectedDetailPlace.location.lat,
+          lng: $place.selectedDetailPlace.location.lng,
+        },
+        3
+      );
+      $place.setMoveTrigger(false);
+    }
+  }, [$place.selectedDetailPlace, $place.moveTrigger]);
 
   // 지도 이벤트 핸들러
   const onCenterChanged = (map: kakao.maps.Map) => {
@@ -142,10 +139,14 @@ export default function KakaoMap({
     });
   };
 
-  const onSelectPlace = (place: TypePlace) => {
-    setSelectedPlace(place);
-    console.log("선택된 장소:", place.name, place);
-    $place.setDetailPlace(place);
+  const moveToCoord = (coord: { lat: number; lng: number }, zoom?: number) => {
+    setDisplayCoord(coord);
+    if (zoom && mapRef.current) {
+      setTimeout(() => {
+        mapRef.current!.setLevel(zoom);
+        setZoom(mapRef.current!.getLevel());
+      }, 500);
+    }
   };
 
   const onMarkerDragEnd = (
@@ -154,24 +155,16 @@ export default function KakaoMap({
     idx: number
   ) => {
     const position = marker.getPosition();
+    const newCoord = { lat: position.getLat(), lng: position.getLng() };
+
     if (idx === 0 && $place.selectedCoords.length === 1) {
-      setDisplayCoord({
-        lat: position.getLat(),
-        lng: position.getLng(),
-      });
+      setDisplayCoord(newCoord);
     }
-    const coords = $place.selectedCoords;
-    const selectedIdx = coords.findIndex((item) => item.color === color);
-    if (selectedIdx > -1) {
-      coords.splice(selectedIdx, 1);
-    }
-    $place.setSelectedCoords([
-      ...coords,
-      {
-        coord: { lat: position.getLat(), lng: position.getLng() },
-        color: color,
-      },
-    ]);
+
+    const updatedCoords = $place.selectedCoords.filter(
+      (item) => item.color !== color
+    );
+    $place.setSelectedCoords([...updatedCoords, { coord: newCoord, color }]);
   };
 
   const onMapClick = (
@@ -180,10 +173,9 @@ export default function KakaoMap({
   ) => {
     if ($place.selectedCoords.length === 1) {
       const latlng = mouseEvent.latLng;
-      setDisplayCoord({
-        lat: latlng.getLat(),
-        lng: latlng.getLng(),
-      });
+      const newCoord = { lat: latlng.getLat(), lng: latlng.getLng() };
+      $place.setSelectedCoords([{ coord: newCoord, color: "info" }]);
+      moveToCoord(newCoord);
     }
   };
 
@@ -207,8 +199,10 @@ export default function KakaoMap({
   return (
     displayCoord && (
       <Map
+        ref={mapRef}
         id="map"
-        level={5}
+        level={zoom}
+        zoomable={true}
         center={displayCoord}
         style={{ width: "100%", height: "100%" }}
         onCenterChanged={onCenterChanged}
@@ -217,7 +211,7 @@ export default function KakaoMap({
         onDrag={onDrag}
         onZoomChanged={onDrag}
       >
-        {/* 중앙 마커 */}
+        {/* 중앙 표시 마커 */}
         {mapCenter && (
           <MapMarker
             position={mapCenter}
@@ -250,10 +244,7 @@ export default function KakaoMap({
             key={`${item.color}_${idx}`}
             draggable
             onDragEnd={(e) => onMarkerDragEnd(e, item.color, idx)}
-            position={{
-              lat: item.coord.lat,
-              lng: item.coord.lng,
-            }}
+            position={item.coord}
             image={{
               src: `/images/location_${item.color}.svg`,
               size: { width: 40, height: 40 },
@@ -267,10 +258,7 @@ export default function KakaoMap({
         {places.map((place, idx) => (
           <CustomOverlayMap
             key={`${place.name}_${idx}`}
-            position={{
-              lat: place.location.lat,
-              lng: place.location.lng,
-            }}
+            position={place.location}
           >
             <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-full w-5 h-5">
               <Image
