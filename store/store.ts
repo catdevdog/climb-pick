@@ -31,7 +31,7 @@ interface State {
     setMostNearPlace: (place: TypePlace, distance: number) => void;
 
     selectedDetailPlace: TypePlace | null;
-    setSelectedDetailPlace: (place: TypePlace) => void;
+    setSelectedDetailPlace: (place: TypePlace | null) => void;
     moveTrigger: boolean;
     setMoveTrigger: (trigger: boolean) => void;
 

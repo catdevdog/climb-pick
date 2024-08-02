@@ -38,12 +38,12 @@ export default function Detail() {
           <div className="flex flex-col w-full h-full relative z-10 text-black">
             <h1 className="text-md font-bold mb-1">
               가장 가까운 곳
-              <span className="text-xs text-gray-500 ml-2 font-normal">
+              <span className="text-xs text-stone-600 ml-2 font-normal">
                 약 {distance.toFixed(1)}km
               </span>
             </h1>
             <h2 className="text-xl font-bold">{detailPlace.name}</h2>
-            <p className="text-xs text-gray-500 mt-2">{detailPlace.address}</p>
+            <p className="text-xs text-stone-600 mt-2">{detailPlace.address}</p>
           </div>
         </button>
       )}

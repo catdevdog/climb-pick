@@ -1,13 +1,13 @@
-import React, { useEffect, useRef, useState } from "react";
-import { Map, MapMarker, CustomOverlayMap, Circle } from "react-kakao-maps-sdk";
-import useCurrentLocation from "@/hooks/useCurrentLocation";
-import useStore from "@/store/store";
-import useFirebase from "@/hooks/useFirebase";
 import useAuth from "@/hooks/useAuth";
-import { TypePlace } from "@/types/place";
+import useCurrentLocation from "@/hooks/useCurrentLocation";
+import useFirebase from "@/hooks/useFirebase";
 import useSearchPlaces from "@/hooks/useSearchPlaces";
+import useStore from "@/store/store";
 import { calculateDistance, searchClosetLocation } from "@/utils";
 import Image from "next/image";
+import { useEffect, useRef, useState } from "react";
+import { Circle, CustomOverlayMap, Map, MapMarker } from "react-kakao-maps-sdk";
+import Loading from "./Loading";
 
 // 카카오맵 컴포넌트 props 타입 정의
 type KakaoMapProps = {
@@ -119,7 +119,7 @@ export default function KakaoMap({
 
   // 가장 가까운 장소 클릭 시 지도 이동
   useEffect(() => {
-    if ($place.selectedDetailPlace && $place.moveTrigger) {
+    if ($place.selectedDetailPlace !== null && $place.moveTrigger) {
       moveToCoord(
         {
           lat: $place.selectedDetailPlace.location.lat,
@@ -141,6 +141,7 @@ export default function KakaoMap({
 
   const moveToCoord = (coord: { lat: number; lng: number }, zoom?: number) => {
     setDisplayCoord(coord);
+    mapRef.current!.panTo(new kakao.maps.LatLng(coord.lat, coord.lng));
     if (zoom && mapRef.current) {
       setTimeout(() => {
         mapRef.current!.setLevel(zoom);
@@ -192,7 +193,7 @@ export default function KakaoMap({
   }
 
   if (!userCoord) {
-    return <div>위치를 가져오는 중...</div>;
+    return <Loading />;
   }
 
   // 지도 렌더링

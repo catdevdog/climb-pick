@@ -7,7 +7,7 @@ import { use, useEffect } from "react";
 export default function Home() {
   const router = useRouter();
   useEffect(() => {
-    // router.prefetch("/map");
+    router.prefetch("/map");
     router.push("/map");
   }, []);
   return (
