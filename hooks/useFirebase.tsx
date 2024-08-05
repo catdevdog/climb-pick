@@ -106,7 +106,6 @@ export function useFirebase(): UseFirebaseResult {
    * @param {TypePlace[]} places - 저장할 장소 데이터
    */
   const savePlaces = async (places: TypePlace[]): Promise<void> => {
-    const placesRef = ref(database, "places");
     console.log(places);
 
     try {

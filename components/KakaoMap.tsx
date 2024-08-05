@@ -240,14 +240,14 @@ export default function KakaoMap({
           />
         )}
 
-        <Button
+        {/* <Button
           color="info"
           size="medium"
           className="fixed z-10 left-1/2 transform -translate-x-1/2 bottom-5"
           onClick={() => searchGooglePlaces(37.5864428, 127.1702517)}
         >
           Google Map 검색
-        </Button>
+        </Button> */}
         
         {/* 구글 API 검색 반경 표시 */}
         {/* 경기 : 37.5864428 127.1702517 */}
