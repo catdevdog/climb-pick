@@ -1,8 +1,9 @@
 import { useCallback } from "react";
 import { TypePlace } from "@/types/place";
+import useStore from "@/store/store";
 
 interface UseGooglePlacesResult {
-  searchNearbyPlaces: (
+  searchAllNearbyPlaces: (
     lat: number,
     lng: number,
     radius: number,
@@ -10,28 +11,19 @@ interface UseGooglePlacesResult {
   ) => Promise<TypePlace[]>;
 }
 
-/**
- * Google Places API를 사용하여 장소를 검색하는 커스텀 훅
- * @returns {UseGooglePlacesResult} 장소 검색 함수
- */
 const useGooglePlaces = (): UseGooglePlacesResult => {
-  /**
-   * 주변 장소를 검색하는 함수
-   * @param {number} lat - 위도
-   * @param {number} lng - 경도
-   * @param {number} radius - 검색 반경 (미터)
-   * @param {string} keyword - 검색 키워드
-   * @returns {Promise<TypePlace[]>} 검색된 장소 목록
-   */
+  const { $place } = useStore();
   const searchNearbyPlaces = useCallback(
-    async (
+    (
       lat: number,
       lng: number,
       radius: number,
       keyword: string
     ): Promise<TypePlace[]> => {
+
       return new Promise((resolve, reject) => {
         if (!window.google || !window.google.maps) {
+          console.error("Google Maps API가 로드되지 않았습니다.");
           reject(new Error("Google Maps API가 로드되지 않았습니다."));
           return;
         }
@@ -46,7 +38,16 @@ const useGooglePlaces = (): UseGooglePlacesResult => {
           keyword,
         };
 
-        service.nearbySearch(request, (results, status) => {
+        $place.setCurrentSearchSectionCoords({ lat: lat, lng: lng });
+        $place.setCurrentSearchSectionDistance(radius);
+
+        const allPlaces: TypePlace[] = [];
+
+        const searchCallback = (
+          results: google.maps.places.PlaceResult[] | null,
+          status: google.maps.places.PlacesServiceStatus,
+          pagination: google.maps.places.PlaceSearchPagination | null
+        ) => {
           if (status === google.maps.places.PlacesServiceStatus.OK && results) {
             const typePlaces: TypePlace[] = results.map((result) => ({
               place_id: result.place_id || "",
@@ -62,19 +63,105 @@ const useGooglePlaces = (): UseGooglePlacesResult => {
               user_ratings_total: result.user_ratings_total || 0,
               lastUpdated: new Date().toLocaleString("ko-KR"),
               photos: result.photos || [],
-              reviews: result.reviews || [],
+              reviews: [],
             }));
-            resolve(typePlaces);
+
+            allPlaces.push(...typePlaces);
+            console.log(`Added ${typePlaces.length} places. Total: ${allPlaces.length}`);
+
+            if (pagination && pagination.hasNextPage) {
+              console.log("다음 페이지의 결과를 가져옵니다...");
+              setTimeout(() => {
+                pagination.nextPage();
+              }, 2000); // Google API의 속도 제한을 고려하여 2초 대기
+            } else {
+              console.log(`검색 완료. 총 ${allPlaces.length}개의 장소를 찾았습니다.`);
+              resolve(allPlaces);
+            }
           } else {
-            reject(new Error(`장소 검색 실패: ${status}`));
+            if (status === google.maps.places.PlacesServiceStatus.ZERO_RESULTS) {
+              console.log("결과가 없습니다.");
+              resolve(allPlaces); // 결과가 없어도 빈 배열을 반환하여 넘어감
+            } else {
+              console.error(`장소 검색 실패: ${status}`);
+              reject(new Error(`장소 검색 실패: ${status}`));
+            }
           }
-        });
+        };
+
+        console.log(`장소 검색 시작: (lat: ${lat}, lng: ${lng}, radius: ${radius}, keyword: ${keyword})`);
+        service.nearbySearch(request, searchCallback);
       });
     },
     []
   );
 
-  return { searchNearbyPlaces };
+  const searchAllNearbyPlaces = useCallback(
+    async (
+      lat: number,
+      lng: number,
+      radius: number,
+      keyword: string
+    ): Promise<TypePlace[]> => {
+      console.log("모든 인근 장소 검색 시작...");
+
+      // 전체 반경을 쪼개서 검색하는 방식
+      const DIVISION_FACTOR = 8; // 주어진 반경을 더 작은 반경으로 나눔
+      const RADIUS_STEP = radius / DIVISION_FACTOR;
+      const searchRegions = [];
+
+      // 검색 영역 계산
+      for (let i = -DIVISION_FACTOR / 2; i <= DIVISION_FACTOR / 2; i++) {
+        for (let j = -DIVISION_FACTOR / 2; j <= DIVISION_FACTOR / 2; j++) {
+          if (i === 0 && j === 0) continue; // 중심 영역은 중복 제거
+          searchRegions.push({
+            lat: lat + (i * RADIUS_STEP) / 111320, // 위도 변환 (1도는 약 111.32km)
+            lng:
+              lng +
+              (j * RADIUS_STEP) /
+                (40075000 * Math.cos(lat * Math.PI / 180) / 360), // 경도 변환 (경도는 위도에 따라 다름)
+            radius: RADIUS_STEP,
+          });
+        }
+      }
+
+      const allResults: TypePlace[] = [];
+
+      for (const region of searchRegions) {
+        try {
+          const places = await searchNearbyPlaces(
+            region.lat,
+            region.lng,
+            region.radius,
+            keyword
+          );
+          if (places.length > 0) {
+            allResults.push(...places);
+            console.log(`현재 누적된 장소 수: ${allResults.length}`);
+          } else {
+            console.log(
+              `해당 영역에 결과가 없습니다: (lat: ${region.lat}, lng: ${region.lng})`
+            );
+          }
+        } catch (error) {
+          console.error("Google Places API 검색 중 오류 발생:", error);
+          throw error;
+        }
+      }
+
+      // 중복 제거
+      const uniqueResults = allResults.filter(
+        (place, index, self) =>
+          index === self.findIndex((p) => p.place_id === place.place_id)
+      );
+
+      console.log(`중복 제거 후 최종 장소 수: ${uniqueResults.length}`);
+      return uniqueResults;
+    },
+    [searchNearbyPlaces]
+  );
+
+  return { searchAllNearbyPlaces };
 };
 
 export default useGooglePlaces;

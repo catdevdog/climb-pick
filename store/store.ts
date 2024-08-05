@@ -13,6 +13,12 @@ interface State {
 
     googleSearchDistance: number;
 
+    // 현재 검색 중인 좌표 (GCP)
+    currentSearchSectionCoords: { lat: number; lng: number };
+    setCurrentSearchSectionCoords: (coords: { lat: number; lng: number }) => void;
+    currentSearchSectionDistance: number;
+    setCurrentSearchSectionDistance: (distance: number) => void;
+
     refCoords: { lat: number; lng: number };
 
     coordColors: string[];
@@ -60,12 +66,24 @@ const useStore = create<State>((set) => ({
     SearchDistanceMax: 80400,
 
     // API 검색 반경 2000m
-    googleSearchDistance: 2000,
+    googleSearchDistance: 80400,
 
     // 검색 기준 좌표
     // 덕수궁 광명문: 37.5653926 126.9757768 - 18km (서울)
     // 미음나루: 37.5864428 127.1702517 - 80.4km (경기도)
     refCoords: { lat: 37.5864428, lng: 127.1702517 },
+
+    // 현재 검색 중인 좌표 (GCP)
+    currentSearchSectionCoords: { lat: 0, lng: 0 },
+    setCurrentSearchSectionCoords: (coords) =>
+      set((state) => ({
+        $place: { ...state.$place, currentSearchSectionCoords: coords },
+      })),
+    currentSearchSectionDistance: 0,
+    setCurrentSearchSectionDistance: (distance) =>
+      set((state) => ({
+        $place: { ...state.$place, currentSearchSectionDistance: distance },
+      })),
 
     // 선택된 기준 좌표 리스트
     coordColors: ["secondary", "warning", "danger"],
