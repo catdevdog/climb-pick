@@ -8,6 +8,7 @@ import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { Circle, CustomOverlayMap, Map, MapMarker } from "react-kakao-maps-sdk";
 import Loading from "./Loading";
+import Button from "./Button";
 
 // 카카오맵 컴포넌트 props 타입 정의
 type KakaoMapProps = {
@@ -225,13 +226,37 @@ export default function KakaoMap({
           />
         )}
 
-        {/* 검색 반경 표시 */}
+        {/* 클라임픽 최종 데이터 반경 표시 */}
         {$place.refCoords && (
           <Circle
             center={{ lat: $place.refCoords.lat, lng: $place.refCoords.lng }}
             radius={$place.SearchDistanceMax}
             strokeWeight={3}
             strokeColor={"#ff0000"}
+            strokeOpacity={0.3}
+            strokeStyle={"solid"}
+            fillColor={"#000000"}
+            fillOpacity={0}
+          />
+        )}
+
+        <Button
+          color="info"
+          size="medium"
+          className="fixed z-10 left-1/2 transform -translate-x-1/2 bottom-5"
+          onClick={() => searchGooglePlaces(37.5864428, 127.1702517)}
+        >
+          Google Map 검색
+        </Button>
+        
+        {/* 구글 API 검색 반경 표시 */}
+        {/* 경기 : 37.5864428 127.1702517 */}
+        {$place.currentSearchSectionCoords && (
+          <Circle
+            center={$place.currentSearchSectionCoords}
+            radius={$place.currentSearchSectionDistance}
+            strokeWeight={3}
+            strokeColor={"#ff00ff"}
             strokeOpacity={0.3}
             strokeStyle={"solid"}
             fillColor={"#000000"}

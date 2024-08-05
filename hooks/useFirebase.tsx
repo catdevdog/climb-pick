@@ -77,8 +77,19 @@ export function useFirebase(): UseFirebaseResult {
             places.push(place);
           }
         });
-        console.log(`Firebase에서 ${places.length}건의 데이터를 가져왔습니다.`);
-        return places;
+
+        // 중복되었다고 판단되는 장소 데이터를 제거
+        const uniquePlaces = places.filter(
+          (place, index, self) =>
+            index ===
+            self.findIndex(
+              (t) => t.lat_lng === place.lat_lng || t.name.includes(place.name) || place.name.includes(t.name) || t.address.includes(place.address) || place.address.includes(t.address)  
+            )
+        );
+
+        console.log('중복 제거 전:', places.length, '중복 제거 후:', uniquePlaces.length);
+
+        return uniquePlaces;
       }
       return [];
     } catch (error) {
