@@ -26,6 +26,11 @@ const config: Config = {
           backdropFilter: "blur(8px)",
           boxShadow: "0 4px 30px rgba(0, 0, 0, 0.1)",
         },
+        ".black-glass": {
+          backgroundColor: "rgba(0, 0, 0, 0.3)",
+          backdropFilter: "blur(8px)",
+          boxShadow: "0 4px 30px rgba(0, 0, 0, 0.1)",
+        },
       };
 
       addUtilities(newUtilities, ["responsive", "hover"]);
