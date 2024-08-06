@@ -7,7 +7,6 @@ import Button from "@/components/Button";
 import SearchResultsList from "@/components/SearchResultsList";
 import { useRouter } from "next/navigation";
 import Detail from "@/components/Detail";
-import MostNearPlace from "@/components/MostNearPlace";
 import Modal from "@/components/Modal";
 import Main from "@/components/Main";
 
@@ -145,7 +144,6 @@ export default function Home() {
 
         {$place.detailPlace && <Detail />}
         {openList && <SearchResultsList results={$place.searchResults} />}
-        {$place.mostNearPlace.data && <MostNearPlace />}
       </div>
       <Modal
         title="비교 위치 추가하기"

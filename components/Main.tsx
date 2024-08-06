@@ -1,9 +1,9 @@
 "use client";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import Button from "@/components/Button";
-import { use, useEffect, useState } from "react";
+
+import MostNearPlace from "@/components/MostNearPlace";
+import GoToMap from "@/components/GoToMap";
 import useStore from "@/store/store";
+import { useEffect, useState } from "react";
 
 export default function Home() {
     const { $place } = useStore();
@@ -21,6 +21,8 @@ export default function Home() {
 
     return (
         <>
+            {$place.mostNearPlace.data && <MostNearPlace />}
+            {$place.mostNearPlace.data && <GoToMap />}
             {blurToggle &&
                 <>
                     <div

@@ -8,7 +8,7 @@ export default function Home() {
   const router = useRouter();
   useEffect(() => {
     router.prefetch("/map");
-    // router.push("/map");
+    router.push("/map");
   }, []);
   return (
     <>
