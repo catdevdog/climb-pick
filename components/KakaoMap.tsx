@@ -264,7 +264,7 @@ export default function KakaoMap({
           />
         )}
 
-        {/* 선택된 좌표 마커 */}
+        {/* 선택된 좌표(유저) 마커 */}
         {$place.selectedCoords.map((item, idx) => (
           <MapMarker
             key={`${item.color}_${idx}`}
@@ -286,21 +286,29 @@ export default function KakaoMap({
             key={`${place.name}_${idx}`}
             position={place.location}
           >
-            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-full w-5 h-5">
-              <Image
-                src="/images/data.svg"
-                alt="data"
-                className="w-5 h-5 max-w-5"
-                width={20}
-                height={20}
-              />
-              {place.name === $place.mostNearPlace.data?.name && (
-                <>
-                  <span className="animate-ping absolute top-1/2 inline-flex h-full w-full rounded-full bg-sky-500 opacity-90"></span>
+              {place.name === $place.mostNearPlace.data?.name ? (
+                <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-full w-10 h-10">
+                  <Image
+                    src="/images/3d/pin_iso.svg"
+                    alt="data"
+                    className="w-10 h-10"
+                    width={30}
+                    height={30}
+                  />
+                  <span className="animate-ping absolute top-1/2 right-[0.65rem] inline-flex h-5 w-5 rounded-full bg-red-500 opacity-90"></span>
                   <span className="relative inline-flex top-1/2 rounded-full bg-transparent"></span>
-                </>
+                </div>
+              ):(
+                <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-full w-5 h-5">
+                  <Image
+                    src="/images/data.svg"
+                    alt="data"
+                    className="w-5 h-5 max-w-5"
+                    width={20}
+                    height={20}
+                  />
+                </div>
               )}
-            </div>
           </CustomOverlayMap>
         ))}
       </Map>
