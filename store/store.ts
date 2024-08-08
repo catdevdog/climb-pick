@@ -47,7 +47,7 @@ interface State {
     setSearchRequest: (searchRequest: boolean) => void;
 
     detailPlace: TypePlace | null;
-    setDetailPlace: (place: TypePlace) => void;
+    setDetailPlace: (place: TypePlace | null) => void;
 
     searchResults: TypePlace[];
     setSearchResults: (results: TypePlace[]) => void;

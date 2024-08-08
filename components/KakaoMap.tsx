@@ -99,7 +99,7 @@ export default function KakaoMap({
       );
       $place.setMostNearPlace(nearestPlace, distance);
     }
-  }, [displayCoord, places]);
+  }, [$place.selectedCoords[0]]);
 
   // 여러 장소 기준 가장 가까운 장소 검색
   useEffect(() => {
@@ -116,7 +116,13 @@ export default function KakaoMap({
         $place.setMostNearPlace(closestLocation, distance);
       }
     }
-  }, [$place.selectedCoords, places]);
+  }, [$place.selectedCoords]);
+
+  // 가장 가까운 장소 변경 시 디테일 초기화
+  useEffect(() => {
+    console.log('변경')
+    $place.setDetailPlace(null);
+  }, [$place.mostNearPlace]);
 
   // 가장 가까운 장소 클릭 시 지도 이동
   useEffect(() => {

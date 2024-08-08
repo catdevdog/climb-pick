@@ -11,6 +11,7 @@ export default function Detail() {
     $place.setMoveTrigger(true);
     if (detailPlace) {
       $place.setSelectedDetailPlace(detailPlace);
+      $place.setDetailPlace(detailPlace);
     }
   };
 
