@@ -6,7 +6,7 @@ import useStore from "@/store/store";
 import { calculateDistance, searchClosetLocation } from "@/utils";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
-import { Circle, CustomOverlayMap, Map, MapMarker } from "react-kakao-maps-sdk";
+import { Circle, CustomOverlayMap, Map, MapMarker, Polyline } from "react-kakao-maps-sdk";
 import Loading from "./Loading";
 import Button from "./Button";
 
@@ -213,6 +213,26 @@ export default function KakaoMap({
         onDrag={onDrag}
         onZoomChanged={onDrag}
       >
+
+        {/* 가장 가까운 장소 선 */}
+        {places.length > 0 && $place.mostNearPlace.data && (
+          $place.selectedCoords.map((item, idx) => (
+            <Polyline
+              key={`line_${idx}`}
+              path={[[
+                { lat: item.coord.lat, lng: item.coord.lng },
+                {
+                  lat: $place.mostNearPlace.data!.location.lat,
+                  lng: $place.mostNearPlace.data!.location.lng,
+                },
+              ]]}
+              strokeWeight={2}
+              strokeColor={"black"}
+              strokeOpacity={0.4}
+              strokeStyle={"dashed"}
+            />
+          ))
+        )}
         {/* 중앙 표시 마커 */}
         {mapCenter && (
           <MapMarker
@@ -287,7 +307,7 @@ export default function KakaoMap({
             position={place.location}
           >
               {place.name === $place.mostNearPlace.data?.name ? (
-                <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-full w-10 h-10">
+                <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-[2rem] w-10 h-10">
                   <Image
                     src="/images/3d/pin_iso.svg"
                     alt="data"
