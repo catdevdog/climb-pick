@@ -99,7 +99,7 @@ export default function KakaoMap({
       );
       $place.setMostNearPlace(nearestPlace, distance);
     }
-  }, [$place.selectedCoords[0]]);
+  }, [$place.selectedCoords[0], places]);
 
   // 여러 장소 기준 가장 가까운 장소 검색
   useEffect(() => {
