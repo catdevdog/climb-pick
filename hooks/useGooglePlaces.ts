@@ -68,6 +68,7 @@ const useGooglePlaces = (): UseGooglePlacesResult => {
           pagination: google.maps.places.PlaceSearchPagination | null
         ) => {
           if (status === google.maps.places.PlacesServiceStatus.OK && results) {
+            console.table(results);
             for (const result of results) {
               const typePlace: TypePlace = {
                 place_id: result.place_id || "",
@@ -107,12 +108,13 @@ const useGooglePlaces = (): UseGooglePlacesResult => {
             );
 
             if (pagination && pagination.hasNextPage) {
-              console.log("다음 페이지의 결과를 가져옵니다...");
+              console.log("load--", "다음 페이지의 결과를 가져옵니다...");
               setTimeout(() => {
                 pagination.nextPage();
               }, 2000); // Google API의 속도 제한을 고려하여 2초 대기
             } else {
               console.log(
+                "load--",
                 `검색 완료. 총 ${allPlaces.length}개의 장소를 찾았습니다.`
               );
               resolve(allPlaces);
@@ -131,6 +133,7 @@ const useGooglePlaces = (): UseGooglePlacesResult => {
         };
 
         console.log(
+          "load--",
           `장소 검색 시작: (lat: ${lat}, lng: ${lng}, radius: ${radius}, keyword: ${keyword})`
         );
         service.nearbySearch(request, searchCallback);

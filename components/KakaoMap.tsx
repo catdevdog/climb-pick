@@ -6,7 +6,13 @@ import useStore from "@/store/store";
 import { calculateDistance, searchClosetLocation } from "@/utils";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
-import { Circle, CustomOverlayMap, Map, MapMarker, Polyline } from "react-kakao-maps-sdk";
+import {
+  Circle,
+  CustomOverlayMap,
+  Map,
+  MapMarker,
+  Polyline,
+} from "react-kakao-maps-sdk";
 import Loading from "./Loading";
 import Button from "./Button";
 
@@ -120,7 +126,7 @@ export default function KakaoMap({
 
   // 가장 가까운 장소 변경 시 디테일 초기화
   useEffect(() => {
-    console.log('변경')
+    console.log("변경", $place.mostNearPlace);
     $place.setDetailPlace(null);
   }, [$place.mostNearPlace]);
 
@@ -219,26 +225,27 @@ export default function KakaoMap({
         onDrag={onDrag}
         onZoomChanged={onDrag}
       >
-
         {/* 가장 가까운 장소 선 */}
-        {places.length > 0 && $place.mostNearPlace.data && (
+        {places.length > 0 &&
+          $place.mostNearPlace.data &&
           $place.selectedCoords.map((item, idx) => (
             <Polyline
               key={`line_${idx}`}
-              path={[[
-                { lat: item.coord.lat, lng: item.coord.lng },
-                {
-                  lat: $place.mostNearPlace.data!.location.lat,
-                  lng: $place.mostNearPlace.data!.location.lng,
-                },
-              ]]}
+              path={[
+                [
+                  { lat: item.coord.lat, lng: item.coord.lng },
+                  {
+                    lat: $place.mostNearPlace.data!.location.lat,
+                    lng: $place.mostNearPlace.data!.location.lng,
+                  },
+                ],
+              ]}
               strokeWeight={2}
               strokeColor={"black"}
               strokeOpacity={0.4}
               strokeStyle={"dashed"}
             />
-          ))
-        )}
+          ))}
         {/* 중앙 표시 마커 */}
         {mapCenter && (
           <MapMarker
@@ -274,7 +281,7 @@ export default function KakaoMap({
         >
           Google Map 검색
         </Button> */}
-        
+
         {/* 구글 API 검색 반경 표시 */}
         {/* 경기 : 37.5864428 127.1702517 */}
         {$place.currentSearchSectionCoords && (
@@ -312,29 +319,29 @@ export default function KakaoMap({
             key={`${place.name}_${idx}`}
             position={place.location}
           >
-              {place.name === $place.mostNearPlace.data?.name ? (
-                <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-[2rem] w-10 h-10">
-                  <Image
-                    src="/images/3d/pin_iso.svg"
-                    alt="data"
-                    className="w-10 h-10"
-                    width={30}
-                    height={30}
-                  />
-                  <span className="animate-ping absolute top-1/2 right-[0.65rem] inline-flex h-5 w-5 rounded-full bg-red-500 opacity-90"></span>
-                  <span className="relative inline-flex top-1/2 rounded-full bg-transparent"></span>
-                </div>
-              ):(
-                <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-full w-5 h-5">
-                  <Image
-                    src="/images/data.svg"
-                    alt="data"
-                    className="w-5 h-5 max-w-5"
-                    width={20}
-                    height={20}
-                  />
-                </div>
-              )}
+            {place.name === $place.mostNearPlace.data?.name ? (
+              <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-[2rem] w-10 h-10">
+                <Image
+                  src="/images/3d/pin_iso.svg"
+                  alt="data"
+                  className="w-10 h-10"
+                  width={30}
+                  height={30}
+                />
+                <span className="animate-ping absolute top-1/2 right-[0.65rem] inline-flex h-5 w-5 rounded-full bg-red-500 opacity-90"></span>
+                <span className="relative inline-flex top-1/2 rounded-full bg-transparent"></span>
+              </div>
+            ) : (
+              <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-full w-5 h-5">
+                <Image
+                  src="/images/data.svg"
+                  alt="data"
+                  className="w-5 h-5 max-w-5"
+                  width={20}
+                  height={20}
+                />
+              </div>
+            )}
           </CustomOverlayMap>
         ))}
       </Map>

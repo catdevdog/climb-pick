@@ -78,7 +78,14 @@ const useSearchPlaces = (searchKeyword: string) => {
     }
   };
 
-  return { places, searchPlaces, searchFirebasePlaces, searchGooglePlaces, isLoading, error };
+  return {
+    places,
+    searchPlaces,
+    searchFirebasePlaces,
+    searchGooglePlaces,
+    isLoading,
+    error,
+  };
 };
 
 export default useSearchPlaces;
