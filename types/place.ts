@@ -12,6 +12,13 @@ export type TypePlace = {
   types: string[];
   user_ratings_total: number;
   photos?: google.maps.places.PlacePhoto[] | [];
-  reviews?: google.maps.places.PlaceReview[] | [];
+  reviews?: PlaceReview[] | [];
   distance?: number;
+};
+
+export type PlaceReview = {
+  author_name: string;
+  rating: number | undefined;
+  text: string;
+  time: string;
 };
