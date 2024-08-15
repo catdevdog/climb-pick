@@ -1,8 +1,10 @@
 name: Deploy to Firebase Hosting and Functions on merge
+
 on:
   push:
     branches:
       - dev
+
 jobs:
   build_and_deploy:
     runs-on: ubuntu-latest
@@ -20,13 +22,6 @@ jobs:
       NEXT_PUBLIC_FIREBASE_MEASUREMENTID: ${{ secrets.NEXT_PUBLIC_FIREBASE_MEASUREMENTID }}
     steps:
       - uses: actions/checkout@v4
-      - run: npm ci && npm run build
-      - uses: FirebaseExtended/action-hosting-deploy@v0
-        with:
-          repoToken: ${{ secrets.GITHUB_TOKEN }}
-          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_CLIMB_PICK }}
-          channelId: live
-          projectId: climb-pick
 
       - name: create .env
         run: |
@@ -37,11 +32,16 @@ jobs:
           echo "NEXT_PUBLIC_FIREBASE_AUTHDOMAIN=${{ secrets.NEXT_PUBLIC_FIREBASE_AUTHDOMAIN }}" >> .env
           echo "NEXT_PUBLIC_FIREBASE_PROJECTID=${{ secrets.NEXT_PUBLIC_FIREBASE_PROJECTID }}" >> .env
           echo "NEXT_PUBLIC_FIREBASE_STORAGEBUCKET=${{ secrets.NEXT_PUBLIC_FIREBASE_STORAGEBUCKET }}" >> .env
-          echo "NEXT_PUBLIC_FIREBASE_MESSAGINGSENDERID=${{ secrets.NEXT_PUBLIC_FIREBASE_MESSAGINGSENDERID }}" >> .env
+          echo "NEXT_PUBLIC_FIREBASE_MESSAGINGSENDERID=${{ secrets.NEXT.PUBLIC_FIREBASE_MESSAGINGSENDERID }}" >> .env
           echo "NEXT_PUBLIC_FIREBASE_APPID=${{ secrets.NEXT_PUBLIC_FIREBASE_APPID }}" >> .env
           echo "NEXT_PUBLIC_FIREBASE_MEASUREMENTID=${{ secrets.NEXT_PUBLIC_FIREBASE_MEASUREMENTID }}" >> .env
 
-      - name: Deploy to Firebase Functions
-        run: npm run deploy-functions
+      - run: npm ci && npm run build
+
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools
+
+      - name: Deploy to Firebase Hosting and Functions
+        run: firebase deploy --only hosting,functions --project climb-pick
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_CI_TOKEN }}
