@@ -350,7 +350,7 @@ export default function KakaoMap({
                 {(togglePlaceName ||
                   $place.mostNearPlace.data.name === place.name) && (
                   <div className="absolute top-full left-1/2 -translate-x-1/2 bg-blue-500 px-2 rounded-md shadow-sm">
-                    <span className="text-xs text-white">{place.name}</span>
+                    <span className="text-sm text-white">{place.name}</span>
                   </div>
                 )}
                 <span className="animate-ping absolute top-1/2 right-[0.65rem] inline-flex h-5 w-5 rounded-full bg-blue-500 opacity-90"></span>
@@ -366,8 +366,8 @@ export default function KakaoMap({
                   height={20}
                 />
                 {togglePlaceName && (
-                  <div className="glass absolute top-full left-1/2 -translate-x-1/2 bg-white px-2 rounded-md shadow-sm">
-                    <span className="text-xs text-black">{place.name}</span>
+                  <div className="black-glass absolute top-full left-1/2 -translate-x-1/2 bg-white px-2 rounded-md shadow-sm">
+                    <span className="text-xs text-white">{place.name}</span>
                   </div>
                 )}
               </div>
