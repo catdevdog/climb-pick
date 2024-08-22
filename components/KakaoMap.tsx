@@ -45,6 +45,7 @@ export default function KakaoMap({
   } | null>(null);
   const mapRef = useRef<kakao.maps.Map>(null);
   const [zoom, setZoom] = useState(5);
+  const [togglePlaceName, setTogglePlaceName] = useState(false);
 
   // Kakao 지도 SDK 로드 확인
   useEffect(() => {
@@ -273,6 +274,22 @@ export default function KakaoMap({
           />
         )}
 
+        {/* 장소 이름 토글 버튼 */}
+        <Button
+          color="white"
+          size="medium"
+          className="fixed z-10 left-5 bottom-16"
+          onClick={() => setTogglePlaceName(!togglePlaceName)}
+          icon
+        >
+          <Image
+            src={`/images/icons/${togglePlaceName ? "label_off" : "label"}.svg`}
+            width={22}
+            height={22}
+            alt={togglePlaceName ? "장소 이름 끄기" : "장소 이름 켜기"}
+          />
+        </Button>
+
         {/* <Button
           color="info"
           size="medium"
@@ -318,6 +335,7 @@ export default function KakaoMap({
           <CustomOverlayMap
             key={`${place.name}_${idx}`}
             position={place.location}
+            zIndex={place.name === $place.mostNearPlace.data?.name ? 100 : 0}
           >
             {place.name === $place.mostNearPlace.data?.name ? (
               <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-[2rem] w-10 h-10">
@@ -328,6 +346,11 @@ export default function KakaoMap({
                   width={30}
                   height={30}
                 />
+                {togglePlaceName && (
+                  <div className="absolute top-full left-1/2 -translate-x-1/2 bg-red-500 px-2 rounded-md shadow-sm">
+                    <span className="text-xs text-white">{place.name}</span>
+                  </div>
+                )}
                 <span className="animate-ping absolute top-1/2 right-[0.65rem] inline-flex h-5 w-5 rounded-full bg-red-500 opacity-90"></span>
                 <span className="relative inline-flex top-1/2 rounded-full bg-transparent"></span>
               </div>
@@ -340,6 +363,11 @@ export default function KakaoMap({
                   width={20}
                   height={20}
                 />
+                {togglePlaceName && (
+                  <div className="glass absolute top-full left-1/2 -translate-x-1/2 bg-white px-2 rounded-md shadow-sm">
+                    <span className="text-xs text-black">{place.name}</span>
+                  </div>
+                )}
               </div>
             )}
           </CustomOverlayMap>
