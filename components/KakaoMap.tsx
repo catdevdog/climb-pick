@@ -367,7 +367,7 @@ export default function KakaoMap({
                 <span className="relative inline-flex top-1/2 rounded-full bg-transparent"></span>
               </div>
             ) : (
-              <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-full w-5 h-5">
+              <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-full w-5 h-5 pointer-events-none">
                 <Image
                   src="/images/data_checked.svg"
                   alt="data"
