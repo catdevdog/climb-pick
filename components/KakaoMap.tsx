@@ -340,24 +340,26 @@ export default function KakaoMap({
             {place.name === $place.mostNearPlace.data?.name ? (
               <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-[2rem] w-10 h-10">
                 <Image
-                  src="/images/3d/pin_iso.svg"
+                  // src="/images/3d/pin_iso.svg"
+                  src="/images/data_checked.svg"
                   alt="data"
                   className="w-10 h-10"
                   width={30}
                   height={30}
                 />
-                {togglePlaceName && (
-                  <div className="absolute top-full left-1/2 -translate-x-1/2 bg-red-500 px-2 rounded-md shadow-sm">
+                {(togglePlaceName ||
+                  $place.mostNearPlace.data.name === place.name) && (
+                  <div className="absolute top-full left-1/2 -translate-x-1/2 bg-blue-500 px-2 rounded-md shadow-sm">
                     <span className="text-xs text-white">{place.name}</span>
                   </div>
                 )}
-                <span className="animate-ping absolute top-1/2 right-[0.65rem] inline-flex h-5 w-5 rounded-full bg-red-500 opacity-90"></span>
+                <span className="animate-ping absolute top-1/2 right-[0.65rem] inline-flex h-5 w-5 rounded-full bg-blue-500 opacity-90"></span>
                 <span className="relative inline-flex top-1/2 rounded-full bg-transparent"></span>
               </div>
             ) : (
               <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-full w-5 h-5">
                 <Image
-                  src="/images/data.svg"
+                  src="/images/data_checked.svg"
                   alt="data"
                   className="w-5 h-5 max-w-5"
                   width={20}
