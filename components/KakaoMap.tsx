@@ -33,6 +33,7 @@ export default function KakaoMap({
     useSearchPlaces(searchKeyword);
 
   // 상태 관리
+  const mapRef = useRef<kakao.maps.Map>(null); // 지도 인스턴스
   const [isKakaoLoaded, setIsKakaoLoaded] = useState(false);
   const [mapCenter, setMapCenter] = useState<{ lat: number; lng: number }>();
   const [userCoord, setUserCoord] = useState<{
@@ -43,9 +44,9 @@ export default function KakaoMap({
     lat: number;
     lng: number;
   } | null>(null);
-  const mapRef = useRef<kakao.maps.Map>(null);
   const [zoom, setZoom] = useState(5);
   const [togglePlaceName, setTogglePlaceName] = useState(false);
+  const [controlPolyline, setControlPolyline] = useState(true);
 
   // Kakao 지도 SDK 로드 확인
   useEffect(() => {
@@ -199,6 +200,10 @@ export default function KakaoMap({
       lat: map.getCenter().getLat(),
       lng: map.getCenter().getLng(),
     });
+    setControlPolyline(false);
+  };
+  const onDragEnd = (map: kakao.maps.Map) => {
+    setControlPolyline(true);
   };
 
   // 오류 처리 및 로딩 상태
@@ -224,10 +229,15 @@ export default function KakaoMap({
         isPanto={true}
         onClick={onMapClick}
         onDrag={onDrag}
-        onZoomChanged={onDrag}
+        onDragEnd={onDragEnd}
+        onZoomChanged={(e) => {
+          onDrag(e);
+          setControlPolyline(true);
+        }}
       >
         {/* 가장 가까운 장소 선 */}
-        {places.length > 0 &&
+        {controlPolyline &&
+          places.length > 0 &&
           $place.mostNearPlace.data &&
           $place.selectedCoords.map((item, idx) => (
             <Polyline
