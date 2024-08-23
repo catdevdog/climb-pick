@@ -15,7 +15,10 @@ interface State {
 
     // 현재 검색 중인 좌표 (GCP)
     currentSearchSectionCoords: { lat: number; lng: number };
-    setCurrentSearchSectionCoords: (coords: { lat: number; lng: number }) => void;
+    setCurrentSearchSectionCoords: (coords: {
+      lat: number;
+      lng: number;
+    }) => void;
     currentSearchSectionDistance: number;
     setCurrentSearchSectionDistance: (distance: number) => void;
 
@@ -51,6 +54,10 @@ interface State {
 
     searchResults: TypePlace[];
     setSearchResults: (results: TypePlace[]) => void;
+
+    // 사용자 검색 결과
+    userSearchResults: TypePlace[];
+    setUserSearchResults: (results: TypePlace[]) => void;
   };
 }
 
@@ -132,6 +139,12 @@ const useStore = create<State>((set) => ({
     setSearchResults: (results) =>
       set((state) => ({
         $place: { ...state.$place, searchResults: results },
+      })),
+
+    userSearchResults: [],
+    setUserSearchResults: (results) =>
+      set((state) => ({
+        $place: { ...state.$place, userSearchResults: results },
       })),
   },
 }));

@@ -47,6 +47,7 @@ export default function KakaoMap({
   const [zoom, setZoom] = useState(5);
   const [togglePlaceName, setTogglePlaceName] = useState(false);
   const [controlPolyline, setControlPolyline] = useState(true);
+  const [searchValue, setSearchValue] = useState("");
 
   // Kakao 지도 SDK 로드 확인
   useEffect(() => {
@@ -145,6 +146,18 @@ export default function KakaoMap({
       $place.setMoveTrigger(false);
     }
   }, [$place.selectedDetailPlace, $place.moveTrigger]);
+
+  // searchValue 변경 시 places에서 name 또는 address에 포함된 장소 검색
+  const onUserSearch = () => {
+    if (searchValue.length > 0) {
+      const searchResult = places.filter(
+        (place) =>
+          place.name.includes(searchValue) ||
+          place.address.includes(searchValue)
+      );
+      $place.setUserSearchResults(searchResult);
+    }
+  };
 
   // 지도 이벤트 핸들러
   const onCenterChanged = (map: kakao.maps.Map) => {
@@ -300,6 +313,37 @@ export default function KakaoMap({
           />
         </Button>
 
+        {/* 장소 이름 검색 버튼 */}
+        <input
+          type="text"
+          className="fixed z-10 left-20 bottom-5 border-2 border-blue-500"
+          placeholder="장소 검색"
+          onChange={(e) => setSearchValue(e.target.value)}
+        />
+        {/* 검색 버튼 */}
+        <Button
+          color="white"
+          size="medium"
+          className="fixed z-10 right-5 bottom-20"
+          onClick={onUserSearch}
+          icon
+        >
+          검색
+        </Button>
+        {/* 검색 결과 제거 */}
+        <Button
+          color="white"
+          size="medium"
+          className="fixed z-10 right-5 bottom-5"
+          onClick={() => {
+            setSearchValue("");
+            onUserSearch;
+          }}
+          icon
+        >
+          지우기
+        </Button>
+
         {/* <Button
           color="info"
           size="medium"
@@ -375,7 +419,8 @@ export default function KakaoMap({
                   width={20}
                   height={20}
                 />
-                {togglePlaceName && (
+                {(togglePlaceName ||
+                  $place.userSearchResults.includes(place)) && (
                   <div className="black-glass absolute top-full left-1/2 -translate-x-1/2 bg-white px-2 rounded-md shadow-sm">
                     <span className="text-xs text-white">{place.name}</span>
                   </div>
