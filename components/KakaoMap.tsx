@@ -147,6 +147,29 @@ export default function KakaoMap({
     }
   }, [$place.selectedDetailPlace, $place.moveTrigger]);
 
+  useEffect(() => {
+    if ($place.userSearchResults.length > 0) {
+      const selectedPlace = $place.userSearchResults.sort((a, b) => {
+        const { lat, lng } = userCoord!;
+        const aDistance = calculateDistance(
+          lat,
+          lng,
+          a.location.lat,
+          a.location.lng
+        );
+        const bDistance = calculateDistance(
+          lat,
+          lng,
+          b.location.lat,
+          b.location.lng
+        );
+        return aDistance - bDistance;
+      });
+      setDisplayCoord(selectedPlace[0].location);
+      $place.setDetailPlace(selectedPlace[0]);
+    }
+  }, [$place.userSearchResults]);
+
   // searchValue 변경 시 places에서 name 또는 address에 포함된 장소 검색
   const onUserSearch = () => {
     if (searchValue.length > 0) {
