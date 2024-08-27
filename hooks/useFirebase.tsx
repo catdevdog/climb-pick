@@ -65,6 +65,7 @@ export function useFirebase(): UseFirebaseResult {
     radius: number
   ): Promise<TypePlace[]> => {
     const placesRef = ref(database, "places");
+    const useDuplicateCheck = false;
 
     try {
       const snapshot = await get(placesRef);
@@ -78,16 +79,32 @@ export function useFirebase(): UseFirebaseResult {
           }
         });
 
+        if (!useDuplicateCheck) {
+          console.log("중복 체크를 건너뛰고 모든 장소 데이터를 반환합니다.");
+          console.log("장소 데이터 수:", places.length);
+          return places;
+        }
+
         // 중복되었다고 판단되는 장소 데이터를 제거
         const uniquePlaces = places.filter(
           (place, index, self) =>
             index ===
             self.findIndex(
-              (t) => t.lat_lng === place.lat_lng || t.name.includes(place.name) || place.name.includes(t.name) || t.address.includes(place.address) || place.address.includes(t.address)  
+              (t) =>
+                t.lat_lng === place.lat_lng ||
+                t.name.includes(place.name) ||
+                place.name.includes(t.name) ||
+                t.address.includes(place.address) ||
+                place.address.includes(t.address)
             )
         );
 
-        console.log('중복 제거 전:', places.length, '중복 제거 후:', uniquePlaces.length);
+        console.log(
+          "중복 제거 전:",
+          places.length,
+          "중복 제거 후:",
+          uniquePlaces.length
+        );
 
         return uniquePlaces;
       }

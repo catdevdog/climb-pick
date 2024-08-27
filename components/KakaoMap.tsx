@@ -1,11 +1,5 @@
-import useAuth from "@/hooks/useAuth";
-import useCurrentLocation from "@/hooks/useCurrentLocation";
-import useFirebase from "@/hooks/useFirebase";
-import useSearchPlaces from "@/hooks/useSearchPlaces";
-import useStore from "@/store/store";
-import { calculateDistance, searchClosetLocation } from "@/utils";
+import React, { useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
 import {
   Circle,
   CustomOverlayMap,
@@ -13,12 +7,25 @@ import {
   MapMarker,
   Polyline,
 } from "react-kakao-maps-sdk";
+
+import useAuth from "@/hooks/useAuth";
+import useCurrentLocation from "@/hooks/useCurrentLocation";
+import useFirebase from "@/hooks/useFirebase";
+import useSearchPlaces from "@/hooks/useSearchPlaces";
+import useStore from "@/store/store";
+import { calculateDistance, searchClosetLocation } from "@/utils";
 import Loading from "./Loading";
 import Button from "./Button";
 
 // 카카오맵 컴포넌트 props 타입 정의
 type KakaoMapProps = {
   searchKeyword?: string;
+};
+
+// 좌표 타입 정의
+type Coord = {
+  lat: number;
+  lng: number;
 };
 
 export default function KakaoMap({
@@ -33,17 +40,11 @@ export default function KakaoMap({
     useSearchPlaces(searchKeyword);
 
   // 상태 관리
-  const mapRef = useRef<kakao.maps.Map>(null); // 지도 인스턴스
+  const mapRef = useRef<kakao.maps.Map>(null);
   const [isKakaoLoaded, setIsKakaoLoaded] = useState(false);
-  const [mapCenter, setMapCenter] = useState<{ lat: number; lng: number }>();
-  const [userCoord, setUserCoord] = useState<{
-    lat: number;
-    lng: number;
-  } | null>(null);
-  const [displayCoord, setDisplayCoord] = useState<{
-    lat: number;
-    lng: number;
-  } | null>(null);
+  const [mapCenter, setMapCenter] = useState<Coord>();
+  const [userCoord, setUserCoord] = useState<Coord | null>(null);
+  const [displayCoord, setDisplayCoord] = useState<Coord | null>(null);
   const [zoom, setZoom] = useState(5);
   const [togglePlaceName, setTogglePlaceName] = useState(false);
   const [controlPolyline, setControlPolyline] = useState(true);
@@ -72,41 +73,14 @@ export default function KakaoMap({
     }
   }, [isKakaoLoaded, userCoord, $place.refCoords]);
 
-  // 검색 요청에 따른 장소 검색
-  useEffect(() => {
-    if (isKakaoLoaded && userCoord) {
-      searchPlaces($place.refCoords.lat, $place.refCoords.lng);
-    }
-  }, [isKakaoLoaded, userCoord]);
-
   // 선택 좌표 변경 시 가장 가까운 장소 정렬
   useEffect(() => {
     if (places.length > 0 && $place.selectedCoords.length === 1) {
-      const sortedPlaces = [...places].sort((a, b) => {
-        const { lat, lng } = $place.selectedCoords[0].coord;
-        const aDistance = calculateDistance(
-          lat,
-          lng,
-          a.location.lat,
-          a.location.lng
-        );
-        const bDistance = calculateDistance(
-          lat,
-          lng,
-          b.location.lat,
-          b.location.lng
-        );
-        return aDistance - bDistance;
-      });
-
-      const nearestPlace = sortedPlaces[0];
-      const distance = calculateDistance(
-        $place.selectedCoords[0].coord.lat,
-        $place.selectedCoords[0].coord.lng,
-        nearestPlace.location.lat,
-        nearestPlace.location.lng
+      const sortedPlaces = sortPlacesByDistance(
+        places,
+        $place.selectedCoords[0].coord
       );
-      $place.setMostNearPlace(nearestPlace, distance);
+      updateNearestPlace(sortedPlaces[0], $place.selectedCoords[0].coord);
     }
   }, [$place.selectedCoords[0], places]);
 
@@ -116,61 +90,67 @@ export default function KakaoMap({
       const selectedCoords = $place.selectedCoords.map((item) => item.coord);
       const closestLocation = searchClosetLocation(selectedCoords, places);
       if (closestLocation) {
-        const distance = calculateDistance(
-          selectedCoords[0].lat,
-          selectedCoords[0].lng,
-          closestLocation.location.lat,
-          closestLocation.location.lng
-        );
-        $place.setMostNearPlace(closestLocation, distance);
+        updateNearestPlace(closestLocation, selectedCoords[0]);
       }
     }
   }, [$place.selectedCoords]);
 
   // 가장 가까운 장소 변경 시 디테일 초기화
   useEffect(() => {
-    console.log("변경", $place.mostNearPlace);
     $place.setDetailPlace(null);
   }, [$place.mostNearPlace]);
 
   // 가장 가까운 장소 클릭 시 지도 이동
   useEffect(() => {
     if ($place.selectedDetailPlace !== null && $place.moveTrigger) {
-      moveToCoord(
-        {
-          lat: $place.selectedDetailPlace.location.lat,
-          lng: $place.selectedDetailPlace.location.lng,
-        },
-        3
-      );
+      moveToCoord($place.selectedDetailPlace.location, 3);
       $place.setMoveTrigger(false);
     }
   }, [$place.selectedDetailPlace, $place.moveTrigger]);
 
+  // 사용자 검색 결과가 있을 때 가장 가까운 장소 선정
   useEffect(() => {
     if ($place.userSearchResults.length > 0) {
-      const selectedPlace = $place.userSearchResults.sort((a, b) => {
-        const { lat, lng } = userCoord!;
-        const aDistance = calculateDistance(
-          lat,
-          lng,
-          a.location.lat,
-          a.location.lng
-        );
-        const bDistance = calculateDistance(
-          lat,
-          lng,
-          b.location.lat,
-          b.location.lng
-        );
-        return aDistance - bDistance;
-      });
-      setDisplayCoord(selectedPlace[0].location);
-      $place.setDetailPlace(selectedPlace[0]);
+      const selectedPlace = sortPlacesByDistance(
+        $place.userSearchResults,
+        userCoord!
+      )[0];
+      moveToCoord(selectedPlace.location, 3);
+      $place.setDetailPlace(selectedPlace);
     }
   }, [$place.userSearchResults]);
 
-  // searchValue 변경 시 places에서 name 또는 address에 포함된 장소 검색
+  // 장소를 거리순으로 정렬하는 함수
+  const sortPlacesByDistance = (placesToSort: any[], referenceCoord: Coord) => {
+    return [...placesToSort].sort((a, b) => {
+      const aDistance = calculateDistance(
+        referenceCoord.lat,
+        referenceCoord.lng,
+        a.location.lat,
+        a.location.lng
+      );
+      const bDistance = calculateDistance(
+        referenceCoord.lat,
+        referenceCoord.lng,
+        b.location.lat,
+        b.location.lng
+      );
+      return aDistance - bDistance;
+    });
+  };
+
+  // 가장 가까운 장소 업데이트 함수
+  const updateNearestPlace = (place: any, referenceCoord: Coord) => {
+    const distance = calculateDistance(
+      referenceCoord.lat,
+      referenceCoord.lng,
+      place.location.lat,
+      place.location.lng
+    );
+    $place.setMostNearPlace(place, distance);
+  };
+
+  // 사용자 검색 함수
   const onUserSearch = () => {
     if (searchValue.length > 0) {
       const searchResult = places.filter(
@@ -190,7 +170,8 @@ export default function KakaoMap({
     });
   };
 
-  const moveToCoord = (coord: { lat: number; lng: number }, zoom?: number) => {
+  // 지도 이동 함수
+  const moveToCoord = (coord: Coord, zoom?: number) => {
     setDisplayCoord(coord);
     mapRef.current!.panTo(new kakao.maps.LatLng(coord.lat, coord.lng));
     if (zoom && mapRef.current) {
@@ -201,6 +182,7 @@ export default function KakaoMap({
     }
   };
 
+  // 마커 드래그 종료 이벤트 핸들러
   const onMarkerDragEnd = (
     marker: kakao.maps.Marker,
     color: string,
@@ -219,6 +201,7 @@ export default function KakaoMap({
     $place.setSelectedCoords([...updatedCoords, { coord: newCoord, color }]);
   };
 
+  // 지도 클릭 이벤트 핸들러
   const onMapClick = (
     _: kakao.maps.Map,
     mouseEvent: kakao.maps.event.MouseEvent
@@ -231,6 +214,7 @@ export default function KakaoMap({
     }
   };
 
+  // 지도 드래그 이벤트 핸들러
   const onDrag = (map: kakao.maps.Map) => {
     setMapCenter({
       lat: map.getCenter().getLat(),
@@ -238,7 +222,9 @@ export default function KakaoMap({
     });
     setControlPolyline(false);
   };
-  const onDragEnd = (map: kakao.maps.Map) => {
+
+  // 지도 드래그 종료 이벤트 핸들러
+  const onDragEnd = () => {
     setControlPolyline(true);
   };
 
@@ -250,6 +236,225 @@ export default function KakaoMap({
   if (!userCoord) {
     return <Loading />;
   }
+
+  // 연결선 렌더링 함수
+  const renderPolylines = () => {
+    return (
+      controlPolyline &&
+      places.length > 0 &&
+      $place.mostNearPlace.data &&
+      $place.selectedCoords.map((item, idx) => (
+        <Polyline
+          key={`line_${idx}`}
+          path={[
+            [
+              { lat: item.coord.lat, lng: item.coord.lng },
+              {
+                lat: $place.mostNearPlace.data!.location.lat,
+                lng: $place.mostNearPlace.data!.location.lng,
+              },
+            ],
+          ]}
+          strokeWeight={2}
+          strokeColor={"black"}
+          strokeOpacity={0.4}
+          strokeStyle={"dashed"}
+        />
+      ))
+    );
+  };
+
+  // 중앙 마커 렌더링 함수
+  const renderCenterMarker = () => {
+    return (
+      mapCenter && (
+        <MapMarker
+          position={mapCenter}
+          image={{
+            src: "/images/icons/center.svg",
+            size: { width: 30, height: 30 },
+            options: { offset: { x: 15, y: 15 } },
+          }}
+          zIndex={100}
+        />
+      )
+    );
+  };
+
+  // 검색 반경 원 렌더링 함수
+  const renderSearchRadiusCircle = () => {
+    return (
+      $place.refCoords && (
+        <Circle
+          center={{ lat: $place.refCoords.lat, lng: $place.refCoords.lng }}
+          radius={$place.SearchDistanceMax}
+          strokeWeight={3}
+          strokeColor={"#ff0000"}
+          strokeOpacity={0.3}
+          strokeStyle={"solid"}
+          fillColor={"#000000"}
+          fillOpacity={0}
+        />
+      )
+    );
+  };
+
+  // 토글 버튼 렌더링 함수
+  const renderToggleButton = () => {
+    return (
+      <Button
+        color="white"
+        size="medium"
+        className="fixed z-10 left-5 bottom-16"
+        onClick={() => setTogglePlaceName(!togglePlaceName)}
+        icon
+      >
+        <Image
+          src={`/images/icons/${togglePlaceName ? "label_off" : "label"}.svg`}
+          width={22}
+          height={22}
+          alt={togglePlaceName ? "장소 이름 끄기" : "장소 이름 켜기"}
+        />
+      </Button>
+    );
+  };
+
+  // 검색 입력 필드 렌더링 함수
+  const renderSearchInput = () => {
+    return (
+      <input
+        type="text"
+        className="fixed z-10 left-20 bottom-5 border-2 border-blue-500"
+        placeholder="장소 검색"
+        onChange={(e) => setSearchValue(e.target.value)}
+      />
+    );
+  };
+
+  // 검색 버튼 렌더링 함수
+  const renderSearchButton = () => {
+    return (
+      <Button
+        color="white"
+        size="medium"
+        className="fixed z-10 right-5 bottom-20"
+        onClick={onUserSearch}
+        icon
+      >
+        검색
+      </Button>
+    );
+  };
+
+  // 검색 결과 제거 버튼 렌더링 함수
+  const renderClearSearchButton = () => {
+    return (
+      <Button
+        color="white"
+        size="medium"
+        className="fixed z-10 right-5 bottom-5"
+        onClick={() => {
+          setSearchValue("");
+          onUserSearch();
+        }}
+        icon
+      >
+        지우기
+      </Button>
+    );
+  };
+
+  // 구글 검색 반경 원 렌더링 함수
+  const renderGoogleSearchRadiusCircle = () => {
+    return (
+      $place.currentSearchSectionCoords && (
+        <Circle
+          center={$place.currentSearchSectionCoords}
+          radius={$place.currentSearchSectionDistance}
+          strokeWeight={3}
+          strokeColor={"#ff00ff"}
+          strokeOpacity={0.3}
+          strokeStyle={"solid"}
+          fillColor={"#000000"}
+          fillOpacity={0}
+        />
+      )
+    );
+  };
+
+  // 선택된 좌표 마커 렌더링 함수
+  const renderSelectedCoordMarkers = () => {
+    return $place.selectedCoords.map((item, idx) => (
+      <MapMarker
+        key={`${item.color}_${idx}`}
+        draggable
+        onDragEnd={(e) => onMarkerDragEnd(e, item.color, idx)}
+        position={item.coord}
+        image={{
+          src: `/images/location_${item.color}.svg`,
+          size: { width: 40, height: 40 },
+          options: { offset: { x: 20, y: 40 } },
+        }}
+        zIndex={100}
+      />
+    ));
+  };
+
+  // 장소 마커 렌더링 함수
+  const renderPlaceMarkers = () => {
+    return places.map((place, idx) => (
+      <CustomOverlayMap
+        key={`${place.name}_${idx}`}
+        position={place.location}
+        zIndex={
+          place.name === $place.mostNearPlace.data?.name ||
+          $place.userSearchResults.map((item) => item.name).includes(place.name)
+            ? 100
+            : 0
+        }
+      >
+        {place.name === $place.mostNearPlace.data?.name ? (
+          // 가장 가까운 장소 하이라이트
+          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-[2rem] w-10 h-10">
+            <Image
+              src="/images/data_checked.svg"
+              alt="data"
+              className="w-10 h-10"
+              width={30}
+              height={30}
+            />
+            {/* 이름 표기 */}
+            {(togglePlaceName ||
+              $place.mostNearPlace.data.name === place.name) && (
+              <div className="absolute top-full left-1/2 -translate-x-1/2 bg-blue-500 px-2 rounded-md shadow-sm">
+                <span className="text-sm text-white">{place.name}</span>
+              </div>
+            )}
+            <span className="animate-ping absolute top-1/2 right-[0.65rem] inline-flex h-5 w-5 rounded-full bg-blue-500 opacity-90"></span>
+            <span className="relative inline-flex top-1/2 rounded-full bg-transparent"></span>
+          </div>
+        ) : (
+          // 그 외 장소
+          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-full w-5 h-5 pointer-events-none">
+            <Image
+              src="/images/data_checked.svg"
+              alt="data"
+              className="w-5 h-5 max-w-5"
+              width={20}
+              height={20}
+            />
+            {(togglePlaceName ||
+              // 검색 결과 중에 포함된 장소는 이름 표기
+              $place.userSearchResults.includes(place)) && (
+              <div className="bg-black absolute top-full left-1/2 -translate-x-1/2 px-2 rounded-md shadow-sm">
+                <span className="text-xs text-white">{place.name}</span>
+              </div>
+            )}
+          </div>
+        )}
+      </CustomOverlayMap>
+    ));
+  };
 
   // 지도 렌더링
   return (
@@ -271,187 +476,35 @@ export default function KakaoMap({
           setControlPolyline(true);
         }}
       >
-        {/* 가장 가까운 장소 선 */}
-        {controlPolyline &&
-          places.length > 0 &&
-          $place.mostNearPlace.data &&
-          $place.selectedCoords.map((item, idx) => (
-            <Polyline
-              key={`line_${idx}`}
-              path={[
-                [
-                  { lat: item.coord.lat, lng: item.coord.lng },
-                  {
-                    lat: $place.mostNearPlace.data!.location.lat,
-                    lng: $place.mostNearPlace.data!.location.lng,
-                  },
-                ],
-              ]}
-              strokeWeight={2}
-              strokeColor={"black"}
-              strokeOpacity={0.4}
-              strokeStyle={"dashed"}
-            />
-          ))}
+        {/* 가장 가까운 장소 연결선 */}
+        {renderPolylines()}
+
         {/* 중앙 표시 마커 */}
-        {mapCenter && (
-          <MapMarker
-            position={mapCenter}
-            image={{
-              src: "/images/icons/center.svg",
-              size: { width: 30, height: 30 },
-              options: { offset: { x: 15, y: 15 } },
-            }}
-            zIndex={100}
-          />
-        )}
+        {renderCenterMarker()}
 
         {/* 클라임픽 최종 데이터 반경 표시 */}
-        {$place.refCoords && (
-          <Circle
-            center={{ lat: $place.refCoords.lat, lng: $place.refCoords.lng }}
-            radius={$place.SearchDistanceMax}
-            strokeWeight={3}
-            strokeColor={"#ff0000"}
-            strokeOpacity={0.3}
-            strokeStyle={"solid"}
-            fillColor={"#000000"}
-            fillOpacity={0}
-          />
-        )}
+        {renderSearchRadiusCircle()}
 
         {/* 장소 이름 토글 버튼 */}
-        <Button
-          color="white"
-          size="medium"
-          className="fixed z-10 left-5 bottom-16"
-          onClick={() => setTogglePlaceName(!togglePlaceName)}
-          icon
-        >
-          <Image
-            src={`/images/icons/${togglePlaceName ? "label_off" : "label"}.svg`}
-            width={22}
-            height={22}
-            alt={togglePlaceName ? "장소 이름 끄기" : "장소 이름 켜기"}
-          />
-        </Button>
+        {renderToggleButton()}
 
-        {/* 장소 이름 검색 버튼 */}
-        <input
-          type="text"
-          className="fixed z-10 left-20 bottom-5 border-2 border-blue-500"
-          placeholder="장소 검색"
-          onChange={(e) => setSearchValue(e.target.value)}
-        />
+        {/* 장소 이름 검색 입력 필드 */}
+        {renderSearchInput()}
+
         {/* 검색 버튼 */}
-        <Button
-          color="white"
-          size="medium"
-          className="fixed z-10 right-5 bottom-20"
-          onClick={onUserSearch}
-          icon
-        >
-          검색
-        </Button>
-        {/* 검색 결과 제거 */}
-        <Button
-          color="white"
-          size="medium"
-          className="fixed z-10 right-5 bottom-5"
-          onClick={() => {
-            setSearchValue("");
-            onUserSearch;
-          }}
-          icon
-        >
-          지우기
-        </Button>
+        {renderSearchButton()}
 
-        {/* <Button
-          color="info"
-          size="medium"
-          className="fixed z-10 left-1/2 transform -translate-x-1/2 bottom-5"
-          onClick={() => searchGooglePlaces(37.5864428, 127.1702517)}
-        >
-          Google Map 검색
-        </Button> */}
+        {/* 검색 결과 제거 버튼 */}
+        {renderClearSearchButton()}
 
         {/* 구글 API 검색 반경 표시 */}
-        {/* 경기 : 37.5864428 127.1702517 */}
-        {$place.currentSearchSectionCoords && (
-          <Circle
-            center={$place.currentSearchSectionCoords}
-            radius={$place.currentSearchSectionDistance}
-            strokeWeight={3}
-            strokeColor={"#ff00ff"}
-            strokeOpacity={0.3}
-            strokeStyle={"solid"}
-            fillColor={"#000000"}
-            fillOpacity={0}
-          />
-        )}
+        {renderGoogleSearchRadiusCircle()}
 
         {/* 선택된 좌표(유저) 마커 */}
-        {$place.selectedCoords.map((item, idx) => (
-          <MapMarker
-            key={`${item.color}_${idx}`}
-            draggable
-            onDragEnd={(e) => onMarkerDragEnd(e, item.color, idx)}
-            position={item.coord}
-            image={{
-              src: `/images/location_${item.color}.svg`,
-              size: { width: 40, height: 40 },
-              options: { offset: { x: 20, y: 40 } },
-            }}
-            zIndex={100}
-          />
-        ))}
+        {renderSelectedCoordMarkers()}
 
         {/* 모든 장소 마커 */}
-        {places.map((place, idx) => (
-          <CustomOverlayMap
-            key={`${place.name}_${idx}`}
-            position={place.location}
-            zIndex={place.name === $place.mostNearPlace.data?.name ? 100 : 0}
-          >
-            {place.name === $place.mostNearPlace.data?.name ? (
-              <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-[2rem] w-10 h-10">
-                <Image
-                  // src="/images/3d/pin_iso.svg"
-                  src="/images/data_checked.svg"
-                  alt="data"
-                  className="w-10 h-10"
-                  width={30}
-                  height={30}
-                />
-                {(togglePlaceName ||
-                  $place.mostNearPlace.data.name === place.name) && (
-                  <div className="absolute top-full left-1/2 -translate-x-1/2 bg-blue-500 px-2 rounded-md shadow-sm">
-                    <span className="text-sm text-white">{place.name}</span>
-                  </div>
-                )}
-                <span className="animate-ping absolute top-1/2 right-[0.65rem] inline-flex h-5 w-5 rounded-full bg-blue-500 opacity-90"></span>
-                <span className="relative inline-flex top-1/2 rounded-full bg-transparent"></span>
-              </div>
-            ) : (
-              <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-full w-5 h-5 pointer-events-none">
-                <Image
-                  src="/images/data_checked.svg"
-                  alt="data"
-                  className="w-5 h-5 max-w-5"
-                  width={20}
-                  height={20}
-                />
-                {(togglePlaceName ||
-                  $place.userSearchResults.includes(place)) && (
-                  <div className="black-glass absolute top-full left-1/2 -translate-x-1/2 bg-white px-2 rounded-md shadow-sm">
-                    <span className="text-xs text-white">{place.name}</span>
-                  </div>
-                )}
-              </div>
-            )}
-          </CustomOverlayMap>
-        ))}
+        {renderPlaceMarkers()}
       </Map>
     )
   );
