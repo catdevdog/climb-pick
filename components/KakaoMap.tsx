@@ -16,6 +16,8 @@ import useStore from "@/store/store";
 import { calculateDistance, searchClosetLocation } from "@/utils";
 import Loading from "./Loading";
 import Button from "./Button";
+import Modal from "./Modal";
+import { set } from "firebase/database";
 
 // 카카오맵 컴포넌트 props 타입 정의
 type KakaoMapProps = {
@@ -49,6 +51,7 @@ export default function KakaoMap({
   const [togglePlaceName, setTogglePlaceName] = useState(false);
   const [controlPolyline, setControlPolyline] = useState(true);
   const [searchValue, setSearchValue] = useState("");
+  const [searchModal, setSearchModal] = useState(false);
 
   // Kakao 지도 SDK 로드 확인
   useEffect(() => {
@@ -108,17 +111,17 @@ export default function KakaoMap({
     }
   }, [$place.selectedDetailPlace, $place.moveTrigger]);
 
-  // 사용자 검색 결과가 있을 때 가장 가까운 장소 선정
+  // 검색 값이 있을 때 검색 실행
   useEffect(() => {
-    if ($place.userSearchResults.length > 0) {
-      const selectedPlace = sortPlacesByDistance(
-        $place.userSearchResults,
-        userCoord!
-      )[0];
-      moveToCoord(selectedPlace.location, 3);
-      $place.setDetailPlace(selectedPlace);
+    if (searchValue.length > 0) {
+      onUserSearch();
     }
-  }, [$place.userSearchResults]);
+  }, [searchValue]);
+
+  const openSearchModal = () => {
+    setSearchModal(true);
+    moveToCoord(userCoord!, 10);
+  };
 
   // 장소를 거리순으로 정렬하는 함수
   const sortPlacesByDistance = (placesToSort: any[], referenceCoord: Coord) => {
@@ -319,47 +322,23 @@ export default function KakaoMap({
     );
   };
 
-  // 검색 입력 필드 렌더링 함수
-  const renderSearchInput = () => {
-    return (
-      <input
-        type="text"
-        className="fixed z-10 left-20 bottom-5 border-2 border-blue-500"
-        placeholder="장소 검색"
-        onChange={(e) => setSearchValue(e.target.value)}
-      />
-    );
-  };
-
   // 검색 버튼 렌더링 함수
   const renderSearchButton = () => {
     return (
       <Button
-        color="white"
-        size="medium"
-        className="fixed z-10 right-5 bottom-20"
-        onClick={onUserSearch}
-        icon
-      >
-        검색
-      </Button>
-    );
-  };
-
-  // 검색 결과 제거 버튼 렌더링 함수
-  const renderClearSearchButton = () => {
-    return (
-      <Button
-        color="white"
+        color="black"
         size="medium"
         className="fixed z-10 right-5 bottom-5"
-        onClick={() => {
-          setSearchValue("");
-          onUserSearch();
-        }}
+        onClick={() => openSearchModal()}
         icon
       >
-        지우기
+        <Image
+          src="/images/icons/search.svg"
+          width={24}
+          height={24}
+          alt="검색"
+          style={{ filter: "invert(1)" }}
+        />
       </Button>
     );
   };
@@ -446,7 +425,7 @@ export default function KakaoMap({
             {(togglePlaceName ||
               // 검색 결과 중에 포함된 장소는 이름 표기
               $place.userSearchResults.includes(place)) && (
-              <div className="bg-black absolute top-full left-1/2 -translate-x-1/2 px-2 rounded-md shadow-sm">
+              <div className="bg-stone-800 absolute top-full left-1/2 -translate-x-1/2 px-2 rounded-md shadow-sm">
                 <span className="text-xs text-white">{place.name}</span>
               </div>
             )}
@@ -459,53 +438,66 @@ export default function KakaoMap({
   // 지도 렌더링
   return (
     displayCoord && (
-      <Map
-        ref={mapRef}
-        id="map"
-        level={zoom}
-        zoomable={true}
-        center={displayCoord}
-        style={{ width: "100%", height: "100%" }}
-        onCenterChanged={onCenterChanged}
-        isPanto={true}
-        onClick={onMapClick}
-        onDrag={onDrag}
-        onDragEnd={onDragEnd}
-        onZoomChanged={(e) => {
-          onDrag(e);
-          setControlPolyline(true);
-        }}
-      >
-        {/* 가장 가까운 장소 연결선 */}
-        {renderPolylines()}
+      <>
+        <Map
+          ref={mapRef}
+          id="map"
+          level={zoom}
+          zoomable={true}
+          center={displayCoord}
+          style={{ width: "100%", height: "100%" }}
+          onCenterChanged={onCenterChanged}
+          isPanto={true}
+          onClick={onMapClick}
+          onDrag={onDrag}
+          onDragEnd={onDragEnd}
+          onZoomChanged={(e) => {
+            onDrag(e);
+            setControlPolyline(true);
+          }}
+        >
+          {/* 가장 가까운 장소 연결선 */}
+          {renderPolylines()}
 
-        {/* 중앙 표시 마커 */}
-        {renderCenterMarker()}
+          {/* 중앙 표시 마커 */}
+          {renderCenterMarker()}
 
-        {/* 클라임픽 최종 데이터 반경 표시 */}
-        {renderSearchRadiusCircle()}
+          {/* 클라임픽 최종 데이터 반경 표시 */}
+          {renderSearchRadiusCircle()}
 
-        {/* 장소 이름 토글 버튼 */}
-        {renderToggleButton()}
+          {/* 장소 이름 토글 버튼 */}
+          {renderToggleButton()}
 
-        {/* 장소 이름 검색 입력 필드 */}
-        {renderSearchInput()}
+          {/* 검색 버튼 */}
+          {renderSearchButton()}
 
-        {/* 검색 버튼 */}
-        {renderSearchButton()}
+          {/* 구글 API 검색 반경 표시 */}
+          {renderGoogleSearchRadiusCircle()}
 
-        {/* 검색 결과 제거 버튼 */}
-        {renderClearSearchButton()}
+          {/* 선택된 좌표(유저) 마커 */}
+          {renderSelectedCoordMarkers()}
 
-        {/* 구글 API 검색 반경 표시 */}
-        {renderGoogleSearchRadiusCircle()}
-
-        {/* 선택된 좌표(유저) 마커 */}
-        {renderSelectedCoordMarkers()}
-
-        {/* 모든 장소 마커 */}
-        {renderPlaceMarkers()}
-      </Map>
+          {/* 모든 장소 마커 */}
+          {renderPlaceMarkers()}
+        </Map>
+        <Modal
+          title="검색"
+          isOpen={searchModal}
+          onClose={() => setSearchModal(false)}
+        >
+          <p className="text-sm text-gray-500 mb-1">
+            입력과 동시에 검색 결과가 표시됩니다.
+          </p>
+          <input
+            type="text"
+            className="w-full p-2 border border-gray-300 rounded-md"
+            placeholder="이름 또는 주소로 검색"
+            onChange={(e) => {
+              setSearchValue(e.target.value);
+            }}
+          />
+        </Modal>
+      </>
     )
   );
 }
