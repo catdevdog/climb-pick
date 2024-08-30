@@ -145,17 +145,6 @@ export default function Home() {
         {$place.detailPlace && <Detail />}
         {openList && <SearchResultsList results={$place.searchResults} />}
       </div>
-      <Modal
-        title="비교 위치 추가하기"
-        isOpen={openModal}
-        onClose={() => {
-          setOpenModal(false);
-        }}
-      >
-        <div>
-          <p>위치 추가 로직 필요</p>
-        </div>
-      </Modal>
     </>
   );
 }
