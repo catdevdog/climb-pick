@@ -7,7 +7,7 @@ export default function Detail() {
   return (
     <>
       {detailPlace && (
-        <div className="fixed z-20 w-96 flex items-center left-1/2 right-5 -translate-x-1/2 bottom-20 p-2 bg-white rounded-md border-2 border-blue-500">
+        <div className="fixed z-20 w-96 flex items-center left-1/2 right-5 -translate-x-1/2 bottom-8 p-2 bg-white rounded-md border-2 border-blue-500">
           <div className="flex flex-col w-full h-full">
             <h2 className="text-sm font-bold">{detailPlace.name}</h2>
             <p className="text-xs text-gray-500">{detailPlace.address}</p>

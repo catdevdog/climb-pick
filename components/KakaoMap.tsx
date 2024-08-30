@@ -18,6 +18,7 @@ import Loading from "./Loading";
 import Button from "./Button";
 import Modal from "./Modal";
 import { set } from "firebase/database";
+import { TypePlace } from "@/types/place";
 
 // 카카오맵 컴포넌트 props 타입 정의
 type KakaoMapProps = {
@@ -52,14 +53,15 @@ export default function KakaoMap({
   const [controlPolyline, setControlPolyline] = useState(true);
   const [searchValue, setSearchValue] = useState("");
   const [searchModal, setSearchModal] = useState(false);
+  const [openList, setOpenList] = useState(false);
 
   // Kakao 지도 SDK 로드 확인
   useEffect(() => {
     window.kakao.maps.load(() => setIsKakaoLoaded(true));
   }, []);
 
-  // 초기 위치 설정 및 사용자 정보 저장
-  useEffect(() => {
+  // 사용자 위치 초기설정 함수
+  const initUserLocation = () => {
     if (initLocation && user) {
       const { lat, lng } = initLocation;
       setUserCoord(initLocation);
@@ -67,6 +69,11 @@ export default function KakaoMap({
       $place.setSelectedCoords([{ coord: { lat, lng }, color: "info" }]);
       saveUser(user.uid, lat, lng);
     }
+  };
+
+  // 초기 위치 설정 및 사용자 정보 저장
+  useEffect(() => {
+    initUserLocation();
   }, [initLocation, user]);
 
   // 사용자 위치 설정 시 장소 검색
@@ -83,6 +90,18 @@ export default function KakaoMap({
         places,
         $place.selectedCoords[0].coord
       );
+
+      const sortedWithDistance = sortedPlaces.map((place) => {
+        const distance = calculateDistance(
+          $place.selectedCoords[0].coord.lat,
+          $place.selectedCoords[0].coord.lng,
+          place.location.lat,
+          place.location.lng
+        );
+        return { data: place, distance };
+      });
+      $place.setSortedPlaces(sortedWithDistance.slice(0, 20));
+
       updateNearestPlace(sortedPlaces[0], $place.selectedCoords[0].coord);
     }
   }, [$place.selectedCoords[0], places]);
@@ -124,8 +143,8 @@ export default function KakaoMap({
   };
 
   // 장소를 거리순으로 정렬하는 함수
-  const sortPlacesByDistance = (placesToSort: any[], referenceCoord: Coord) => {
-    return [...placesToSort].sort((a, b) => {
+  const sortPlacesByDistance = (data: TypePlace[], referenceCoord: Coord) => {
+    return [...data].sort((a, b) => {
       const aDistance = calculateDistance(
         referenceCoord.lat,
         referenceCoord.lng,
@@ -143,7 +162,7 @@ export default function KakaoMap({
   };
 
   // 가장 가까운 장소 업데이트 함수
-  const updateNearestPlace = (place: any, referenceCoord: Coord) => {
+  const updateNearestPlace = (place: TypePlace, referenceCoord: Coord) => {
     const distance = calculateDistance(
       referenceCoord.lat,
       referenceCoord.lng,
@@ -426,24 +445,53 @@ export default function KakaoMap({
     ));
   };
 
-  // 검색 결과 모달 렌더링 함수
-  const renderSearchResults = () => {
+  // 가까운 장소 리스트 렌더링 함수
+  const renderNearPlaceList = () => {
     return (
-      <Modal
-        title="검색 결과"
-        isOpen={$place.userSearchResults.length > 0}
-        onClose={() => $place.setUserSearchResults([])}
+      $place.sortedPlaces &&
+      openList && (
+        <div className="glass fixed z-10 right-5 top-1/2 left-5 bottom-32 p-5 bg-white rounded-lg shadow-lg overflow-y-auto">
+          <h2 className="text-lg font-bold mb-2">가장 가까운 장소</h2>
+          {$place.sortedPlaces.map((place, idx) => (
+            <div
+              key={`${place.data.name}_${idx}`}
+              onClick={() => {
+                $place.setSelectedDetailPlace(place.data);
+                $place.setDetailPlace(place.data);
+                $place.setMoveTrigger(true);
+              }}
+              className="flex justify-between items-start border-b border-gray-300 py-3 cursor-pointer"
+            >
+              <div className="flex items-center flex-wrap">
+                <span className="text-sm">{place.data.name}</span>
+                <span className="text-xs text-gray-500 mx-2">
+                  {place.distance.toFixed(2)}km
+                </span>
+                <span className="text-xs text-gray-500">
+                  {place.data.address}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )
+    );
+  };
+
+  // 가까운 장소 리스트 토글 버튼 렌더링 함수
+  const renderNearPlaceListToggleButton = () => {
+    return (
+      <Button
+        color="black"
+        size="medium"
+        icon
+        className="fixed z-10 right-5 bottom-[6.8rem] rounded-full"
+        onClick={() => setOpenList(!openList)}
       >
-        {$place.userSearchResults.map((place, idx) => (
-          <div
-            key={`${place.name}_${idx}`}
-            className="p-2 border-b border-gray-300"
-          >
-            <p className="text-sm font-bold">{place.name}</p>
-            <p className="text-xs text-gray-500">{place.address}</p>
-          </div>
-        ))}
-      </Modal>
+        <i className="material-symbols-outlined">
+          {openList ? "close" : "menu"}
+        </i>
+      </Button>
     );
   };
 
@@ -456,7 +504,7 @@ export default function KakaoMap({
         icon
         className="fixed z-10 right-5 bottom-16"
         onClick={() => {
-          moveToCoord(userCoord!);
+          initUserLocation();
         }}
       >
         <i className="material-symbols-outlined">recenter</i>
@@ -509,11 +557,14 @@ export default function KakaoMap({
           {/* 모든 장소 마커 */}
           {renderPlaceMarkers()}
 
-          {/* 검색 결과 모달 */}
-          {renderSearchResults()}
-
           {/* 내 위치로 이동 버튼 */}
           {renderRecenter()}
+
+          {/* 가까운 장소 리스트 */}
+          {renderNearPlaceList()}
+
+          {/* 가까운 장소 리스트 토글 버튼 */}
+          {renderNearPlaceListToggleButton()}
         </Map>
         <Modal
           title="검색"

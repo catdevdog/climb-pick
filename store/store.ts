@@ -39,6 +39,12 @@ interface State {
     };
     setMostNearPlace: (place: TypePlace, distance: number) => void;
 
+    sortedPlaces: {
+      data: TypePlace;
+      distance: number;
+    }[];
+    setSortedPlaces: (places: { data: TypePlace; distance: number }[]) => void;
+
     selectedDetailPlace: TypePlace | null;
     setSelectedDetailPlace: (place: TypePlace | null) => void;
     moveTrigger: boolean;
@@ -113,6 +119,10 @@ const useStore = create<State>((set) => ({
       set((state) => ({
         $place: { ...state.$place, mostNearPlace: { data: place, distance } },
       })),
+
+    sortedPlaces: [],
+    setSortedPlaces: (places) =>
+      set((state) => ({ $place: { ...state.$place, sortedPlaces: places } })),
 
     selectedDetailPlace: null,
     setSelectedDetailPlace: (place) =>
