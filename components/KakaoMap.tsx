@@ -459,10 +459,12 @@ export default function KakaoMap({
                 $place.setSelectedDetailPlace(place.data);
                 $place.setDetailPlace(place.data);
                 $place.setMoveTrigger(true);
+                setOpenList(false);
               }}
               className="flex justify-between items-start border-b border-gray-300 py-3 cursor-pointer"
             >
               <div className="flex items-center flex-wrap">
+                <span className="text-sm font-bold mr-2">{idx + 1}. </span>
                 <span className="text-sm">{place.data.name}</span>
                 <span className="text-xs text-gray-500 mx-2">
                   {place.distance.toFixed(2)}km
