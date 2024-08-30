@@ -306,18 +306,15 @@ export default function KakaoMap({
   const renderToggleButton = () => {
     return (
       <Button
-        color="white"
-        size="medium"
+        color="black"
+        size="large"
         className="fixed z-10 left-5 bottom-16"
         onClick={() => setTogglePlaceName(!togglePlaceName)}
         icon
       >
-        <Image
-          src={`/images/icons/${togglePlaceName ? "label_off" : "label"}.svg`}
-          width={22}
-          height={22}
-          alt={togglePlaceName ? "장소 이름 끄기" : "장소 이름 켜기"}
-        />
+        <i className="material-symbols-outlined">
+          {togglePlaceName ? "label_off" : "label"}
+        </i>
       </Button>
     );
   };
@@ -332,13 +329,7 @@ export default function KakaoMap({
         onClick={() => openSearchModal()}
         icon
       >
-        <Image
-          src="/images/icons/search.svg"
-          width={24}
-          height={24}
-          alt="검색"
-          style={{ filter: "invert(1)" }}
-        />
+        <i className="material-symbols-outlined">search</i>
       </Button>
     );
   };
@@ -435,6 +426,44 @@ export default function KakaoMap({
     ));
   };
 
+  // 검색 결과 모달 렌더링 함수
+  const renderSearchResults = () => {
+    return (
+      <Modal
+        title="검색 결과"
+        isOpen={$place.userSearchResults.length > 0}
+        onClose={() => $place.setUserSearchResults([])}
+      >
+        {$place.userSearchResults.map((place, idx) => (
+          <div
+            key={`${place.name}_${idx}`}
+            className="p-2 border-b border-gray-300"
+          >
+            <p className="text-sm font-bold">{place.name}</p>
+            <p className="text-xs text-gray-500">{place.address}</p>
+          </div>
+        ))}
+      </Modal>
+    );
+  };
+
+  // 내 위치로 이동 버튼 렌더링 함수
+  const renderRecenter = () => {
+    return (
+      <Button
+        color="black"
+        size="medium"
+        icon
+        className="fixed z-10 right-5 bottom-16"
+        onClick={() => {
+          moveToCoord(userCoord!);
+        }}
+      >
+        <i className="material-symbols-outlined">recenter</i>
+      </Button>
+    );
+  };
+
   // 지도 렌더링
   return (
     displayCoord && (
@@ -479,6 +508,12 @@ export default function KakaoMap({
 
           {/* 모든 장소 마커 */}
           {renderPlaceMarkers()}
+
+          {/* 검색 결과 모달 */}
+          {renderSearchResults()}
+
+          {/* 내 위치로 이동 버튼 */}
+          {renderRecenter()}
         </Map>
         <Modal
           title="검색"
