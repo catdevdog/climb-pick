@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation";
 import Detail from "@/components/Detail";
 import Modal from "@/components/Modal";
 import Main from "@/components/Main";
+import Search from "@/components/Search";
 
 export default function Home() {
   const { $place } = useStore();
@@ -71,15 +72,8 @@ export default function Home() {
     <>
       <div className="w-full h-screen relative">
         <div id="search-map" className="hidden"></div>
-        <Main />
+        <Search />
         <KakaoMap />
-        {/* <Button color="black"
-          size="medium"
-          className="fixed z-10 right-5 bottom-5"
-          onClick={checkStore}
-        >
-          store console
-        </Button> */}
 
         {openList && (
           <Button

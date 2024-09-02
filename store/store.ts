@@ -58,6 +58,7 @@ interface State {
     detailPlace: TypePlace | null;
     setDetailPlace: (place: TypePlace | null) => void;
 
+    // 검색 결과
     searchResults: TypePlace[];
     setSearchResults: (results: TypePlace[]) => void;
 

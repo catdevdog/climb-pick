@@ -13,11 +13,13 @@ import useCurrentLocation from "@/hooks/useCurrentLocation";
 import useFirebase from "@/hooks/useFirebase";
 import useSearchPlaces from "@/hooks/useSearchPlaces";
 import useStore from "@/store/store";
-import { calculateDistance, searchClosetLocation } from "@/utils";
+import {
+  calculateDistance,
+  searchClosetLocation,
+  sortPlacesByDistance,
+} from "@/utils";
 import Loading from "./Loading";
 import Button from "./Button";
-import Modal from "./Modal";
-import { set } from "firebase/database";
 import { TypePlace } from "@/types/place";
 
 // 카카오맵 컴포넌트 props 타입 정의
@@ -51,8 +53,6 @@ export default function KakaoMap({
   const [zoom, setZoom] = useState(5);
   const [togglePlaceName, setTogglePlaceName] = useState(false);
   const [controlPolyline, setControlPolyline] = useState(true);
-  const [searchValue, setSearchValue] = useState("");
-  const [searchModal, setSearchModal] = useState(false);
   const [openList, setOpenList] = useState(false);
 
   // Kakao 지도 SDK 로드 확인
@@ -130,37 +130,6 @@ export default function KakaoMap({
     }
   }, [$place.selectedDetailPlace, $place.moveTrigger]);
 
-  // 검색 값이 있을 때 검색 실행
-  useEffect(() => {
-    if (searchValue.length > 0) {
-      onUserSearch();
-    }
-  }, [searchValue]);
-
-  const openSearchModal = () => {
-    setSearchModal(true);
-    moveToCoord(userCoord!, 10);
-  };
-
-  // 장소를 거리순으로 정렬하는 함수
-  const sortPlacesByDistance = (data: TypePlace[], referenceCoord: Coord) => {
-    return [...data].sort((a, b) => {
-      const aDistance = calculateDistance(
-        referenceCoord.lat,
-        referenceCoord.lng,
-        a.location.lat,
-        a.location.lng
-      );
-      const bDistance = calculateDistance(
-        referenceCoord.lat,
-        referenceCoord.lng,
-        b.location.lat,
-        b.location.lng
-      );
-      return aDistance - bDistance;
-    });
-  };
-
   // 가장 가까운 장소 업데이트 함수
   const updateNearestPlace = (place: TypePlace, referenceCoord: Coord) => {
     const distance = calculateDistance(
@@ -170,18 +139,6 @@ export default function KakaoMap({
       place.location.lng
     );
     $place.setMostNearPlace(place, distance);
-  };
-
-  // 사용자 검색 함수
-  const onUserSearch = () => {
-    if (searchValue.length > 0) {
-      const searchResult = places.filter(
-        (place) =>
-          place.name.includes(searchValue) ||
-          place.address.includes(searchValue)
-      );
-      $place.setUserSearchResults(searchResult);
-    }
   };
 
   // 지도 이벤트 핸들러
@@ -338,21 +295,6 @@ export default function KakaoMap({
     );
   };
 
-  // 검색 버튼 렌더링 함수
-  const renderSearchButton = () => {
-    return (
-      <Button
-        color="black"
-        size="medium"
-        className="fixed z-10 right-5 bottom-5"
-        onClick={() => openSearchModal()}
-        icon
-      >
-        <i className="material-symbols-outlined">search</i>
-      </Button>
-    );
-  };
-
   // 구글 검색 반경 원 렌더링 함수
   const renderGoogleSearchRadiusCircle = () => {
     return (
@@ -445,58 +387,6 @@ export default function KakaoMap({
     ));
   };
 
-  // 가까운 장소 리스트 렌더링 함수
-  const renderNearPlaceList = () => {
-    return (
-      $place.sortedPlaces &&
-      openList && (
-        <div className="glass fixed z-10 right-5 top-1/2 left-5 bottom-32 p-5 bg-white rounded-lg shadow-lg overflow-y-auto">
-          <h2 className="text-lg font-bold mb-2">가장 가까운 장소</h2>
-          {$place.sortedPlaces.map((place, idx) => (
-            <div
-              key={`${place.data.name}_${idx}`}
-              onClick={() => {
-                $place.setSelectedDetailPlace(place.data);
-                $place.setDetailPlace(place.data);
-                $place.setMoveTrigger(true);
-                setOpenList(false);
-              }}
-              className="flex justify-between items-start border-b border-gray-300 py-3 cursor-pointer"
-            >
-              <div className="flex items-center flex-wrap">
-                <span className="text-sm font-bold mr-2">{idx + 1}. </span>
-                <span className="text-sm">{place.data.name}</span>
-                <span className="text-xs text-gray-500 mx-2">
-                  {place.distance.toFixed(2)}km
-                </span>
-                <span className="text-xs text-gray-500">
-                  {place.data.address}
-                </span>
-              </div>
-            </div>
-          ))}
-        </div>
-      )
-    );
-  };
-
-  // 가까운 장소 리스트 토글 버튼 렌더링 함수
-  const renderNearPlaceListToggleButton = () => {
-    return (
-      <Button
-        color="black"
-        size="medium"
-        icon
-        className="fixed z-10 right-5 bottom-[6.8rem] rounded-full"
-        onClick={() => setOpenList(!openList)}
-      >
-        <i className="material-symbols-outlined">
-          {openList ? "close" : "menu"}
-        </i>
-      </Button>
-    );
-  };
-
   // 내 위치로 이동 버튼 렌더링 함수
   const renderRecenter = () => {
     return (
@@ -504,7 +394,7 @@ export default function KakaoMap({
         color="black"
         size="medium"
         icon
-        className="fixed z-10 right-5 bottom-16"
+        className="fixed z-10 right-5 bottom-5"
         onClick={() => {
           initUserLocation();
         }}
@@ -547,9 +437,6 @@ export default function KakaoMap({
           {/* 장소 이름 토글 버튼 */}
           {renderToggleButton()}
 
-          {/* 검색 버튼 */}
-          {renderSearchButton()}
-
           {/* 구글 API 검색 반경 표시 */}
           {renderGoogleSearchRadiusCircle()}
 
@@ -561,30 +448,7 @@ export default function KakaoMap({
 
           {/* 내 위치로 이동 버튼 */}
           {renderRecenter()}
-
-          {/* 가까운 장소 리스트 */}
-          {renderNearPlaceList()}
-
-          {/* 가까운 장소 리스트 토글 버튼 */}
-          {renderNearPlaceListToggleButton()}
         </Map>
-        <Modal
-          title="검색"
-          isOpen={searchModal}
-          onClose={() => setSearchModal(false)}
-        >
-          <p className="text-sm text-gray-500 mb-1">
-            입력과 동시에 검색 결과가 표시됩니다.
-          </p>
-          <input
-            type="text"
-            className="w-full p-2 border border-gray-300 rounded-md"
-            placeholder="이름 또는 주소로 검색"
-            onChange={(e) => {
-              setSearchValue(e.target.value);
-            }}
-          />
-        </Modal>
       </>
     )
   );
