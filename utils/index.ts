@@ -42,26 +42,39 @@ const calculateDistance = (
   return (R * c) / 1000; // km 단위 거리
 };
 
-const getCentroid = (locations: { lat: number, lng: number }[]): { lat: number, lng: number } => {
-  const total = locations.reduce((acc, location) => {
-    return {
-      lat: acc.lat + location.lat,
-      lng: acc.lng + location.lng
-    };
-  }, { lat: 0, lng: 0 });
+const getCentroid = (
+  locations: { lat: number; lng: number }[]
+): { lat: number; lng: number } => {
+  const total = locations.reduce(
+    (acc, location) => {
+      return {
+        lat: acc.lat + location.lat,
+        lng: acc.lng + location.lng,
+      };
+    },
+    { lat: 0, lng: 0 }
+  );
 
   return {
     lat: total.lat / locations.length,
-    lng: total.lng / locations.length
+    lng: total.lng / locations.length,
   };
-}
-const searchClosetLocation = (coordinates: { lat: number, lng: number }[], locations: TypePlace[]): TypePlace | null => {
+};
+const searchClosetLocation = (
+  coordinates: { lat: number; lng: number }[],
+  locations: TypePlace[]
+): TypePlace | null => {
   const centroid = getCentroid(coordinates);
   let closestLocation: TypePlace | null = null;
   let minDistance = Number.MAX_SAFE_INTEGER;
 
   for (const location of locations) {
-    const distance = calculateDistance(centroid.lat, centroid.lng, location.location.lat, location.location.lng);
+    const distance = calculateDistance(
+      centroid.lat,
+      centroid.lng,
+      location.location.lat,
+      location.location.lng
+    );
     if (distance < minDistance) {
       minDistance = distance;
       closestLocation = location;
@@ -69,6 +82,33 @@ const searchClosetLocation = (coordinates: { lat: number, lng: number }[], locat
   }
 
   return closestLocation;
-}
+};
+// 장소를 거리순으로 정렬하는 함수
+const sortPlacesByDistance = (
+  data: TypePlace[],
+  referenceCoord: { lat: number; lng: number }
+) => {
+  return [...data].sort((a, b) => {
+    const aDistance = calculateDistance(
+      referenceCoord.lat,
+      referenceCoord.lng,
+      a.location.lat,
+      a.location.lng
+    );
+    const bDistance = calculateDistance(
+      referenceCoord.lat,
+      referenceCoord.lng,
+      b.location.lat,
+      b.location.lng
+    );
+    return aDistance - bDistance;
+  });
+};
 
-export { formatTimestamp, calculateDistance, getCentroid, searchClosetLocation };
+export {
+  formatTimestamp,
+  calculateDistance,
+  getCentroid,
+  searchClosetLocation,
+  sortPlacesByDistance,
+};
