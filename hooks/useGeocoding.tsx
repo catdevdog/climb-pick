@@ -23,7 +23,6 @@ const useGeocoding = (): UseGeocodingResult => {
             results &&
             results.length > 0
           ) {
-            console.log(results);
             resolve(results[0].formatted_address || null);
           } else {
             console.error(`Geocoding API 호출 실패: ${status}`);
