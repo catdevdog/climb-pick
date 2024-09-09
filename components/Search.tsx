@@ -105,7 +105,7 @@ export default function Search() {
   };
 
   return (
-    <div className="fixed z-50 top-2 left-2 right-2 h-10 ">
+    <div className="fixed z-50 top-14 left-2 right-2 h-10 ">
       <div
         className={`flex gap-2 items-center p-2 rounded-md shadow-md bg-white ${
           isOpened ? "rounded-b-none" : ""

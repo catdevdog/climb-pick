@@ -1,15 +1,14 @@
 "use client";
 
-import React, { useEffect, useState, useCallback } from "react";
-import KakaoMap from "../../components/KakaoMap";
-import useStore from "../../store/store";
 import Button from "@/components/Button";
+import Detail from "@/components/Detail";
+import Header from "@/components/Header";
+import Search from "@/components/Search";
 import SearchResultsList from "@/components/SearchResultsList";
 import { useRouter } from "next/navigation";
-import Detail from "@/components/Detail";
-import Modal from "@/components/Modal";
-import Main from "@/components/Main";
-import Search from "@/components/Search";
+import { useCallback, useEffect, useState } from "react";
+import KakaoMap from "../../components/KakaoMap";
+import useStore from "../../store/store";
 
 export default function Home() {
   const { $place } = useStore();
@@ -70,6 +69,7 @@ export default function Home() {
 
   return (
     <>
+      <Header />
       <div className="w-full h-screen relative">
         <div id="search-map" className="hidden"></div>
         <Search />
