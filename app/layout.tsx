@@ -18,7 +18,7 @@ export default function RootLayout({
   return (
     <html lang="ko" className=" h-full">
       <head>
-        <Script src={GOOGLE_MAP_API_KEY} strategy="afterInteractive" />
+        <Script src={GOOGLE_MAP_API_KEY} strategy="beforeInteractive" />
         <Script src={KAKAO_SDK_URL} strategy="beforeInteractive" />
         <link
           rel="apple-touch-icon"
